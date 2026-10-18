@@ -1,0 +1,136 @@
+.ref-search-scope.ref-dark .search-field{
+  background: rgba(120,120,128,0.28);
+}
+.ref-search-scope.ref-dark .chip{
+  background: rgba(120,120,128,0.28);
+}
+.ref-search-scope /* 仅搜索输入允许选中/复制 */
+input#qInput,.ref-search-scope .search-field input{
+  -webkit-user-select: text;
+  user-select: text;
+}
+.ref-search-scope /* —— Search field —— */
+.search-field{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(120,120,128,0.16);
+  border-radius: 12px;
+  padding: 11px 14px;
+  margin: 4px 0 12px;
+}
+.ref-search-scope .search-field svg{ width: 16px; height: 16px; stroke: var(--label-3); fill: none; stroke-width: 2; flex-shrink: 0; }
+.ref-search-scope .search-field input{
+  flex: 1; border: none; outline: none; background: transparent;
+  color: var(--label); font-size: 17px; font-family: inherit;
+}
+.ref-search-scope .search-field input::placeholder{ color: var(--label-3); }
+.ref-search-scope .chip-row{
+  display: flex; flex-wrap: wrap; gap: 6px 8px;
+  margin-bottom: 8px;
+  justify-content: center;
+  align-items: center;
+  /* 约两行高度，多出的不显示 */
+  max-height: 64px;
+  overflow: hidden;
+}
+.ref-search-scope .chip-row.hide{
+  display: flex !important;
+}
+.ref-search-scope .chip{
+  padding: 5px 11px; border-radius: 14px; border: none;
+  background: rgba(120,120,128,0.16); color: var(--label-2); font-size: 12px;
+  font-family: inherit; cursor: pointer;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  line-height: 1.25;
+  opacity: 1;
+  transform: none;
+}
+.ref-search-scope /* —— 搜索 Tab（QQ 风格） —— */
+.search-tabs{
+  display: flex;
+  gap: 28px;
+  margin: 2px 0 4px;
+  padding: 0 2px;
+  border-bottom: 0.5px solid var(--separator);
+}
+.ref-search-scope .search-tab{
+  position: relative;
+  padding: 12px 4px 14px;
+  border: none;
+  background: transparent;
+  color: var(--label-3);
+  font-size: 16px;
+  font-weight: 400;
+  font-family: inherit;
+  cursor: pointer;
+}
+.ref-search-scope .search-tab.on{
+  color: var(--label);
+  font-weight: 600;
+}
+.ref-search-scope .search-tab.on::after{
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 18px;
+  height: 3px;
+  margin-left: -9px;
+  border-radius: 2px;
+  background: var(--pink);
+}
+.ref-search-scope .search-count{
+  font-size: 12px;
+  color: var(--label-3);
+  padding: 8px 0 6px;
+}
+.ref-search-scope .singer-row,.ref-search-scope .pl-row{
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  cursor: pointer;
+  border-bottom: 0.5px solid var(--separator);
+}
+.ref-search-scope .singer-row:active,.ref-search-scope .pl-row:active{ opacity: 0.72; }
+.ref-search-scope .singer-av{
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--surface);
+  flex-shrink: 0;
+  box-shadow: none;
+}
+.ref-search-scope .singer-meta,.ref-search-scope .pl-meta{ flex: 1; min-width: 0; }
+.ref-search-scope .singer-name,.ref-search-scope .pl-name{
+  font-size: 16px; font-weight: 500;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ref-search-scope .singer-sub,.ref-search-scope .pl-sub{
+  font-size: 13px; color: var(--label-2); margin-top: 4px;
+}
+.ref-search-scope .singer-arrow{
+  color: var(--label-3); font-size: 20px; flex-shrink: 0; font-weight: 300;
+}
+.ref-search-scope .pl-cover{
+  width: 68px; height: 68px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: var(--surface);
+  flex-shrink: 0;
+  box-shadow: none;
+}
+/* 隐藏搜索页原版残留(保留DOM供逻辑读值,ref块自带输入+结果) */
+#view-search #search-results-header,
+#view-search #search-pagination-bar,
+#view-search #batch-toolbar,
+#view-search .flex-1.t-bg-panel.rounded-2xl{display:none !important}
+#view-search .ref-search-scope>div.flex-col:not(.ref-search-extra){display:none !important}
+
+.lx-album-wrap{border-bottom:.5px solid var(--separator)}
+.lx-album-wrap .pl-row{border-bottom:none}
+.lx-album-songs{padding:0 0 8px 82px}
+.lx-album-songs .song{padding:8px 0}
+.lx-album-songs .song-art{width:44px;height:44px}

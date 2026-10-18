@@ -1,0 +1,1588 @@
+/* =============================================================================
+   skin.css —— 参考页风格前端皮肤
+   -----------------------------------------------------------------------------
+   组成：
+     1) 令牌桥接：把仓库播放器的主题变量 (--bg-main / --text-main ...) 映射到
+        参考页的配色令牌 (--bg / --label / --pink ...)，这样原有页面也能立刻
+        融入参考页的观感，而不需要改 HTML 里的 Tailwind 类名。
+     2) 外壳布局：手机窄栏（最大 430px）+ 底部标签栏 + 迷你播放条位置。
+     3) 新主页/资料库/弹层等参考页组件在本项目中的补充样式。
+   ref-ui.css 是参考页的原始组件样式（已去除宽屏媒体查询），本文件只做补充与覆盖。
+   ========================================================================== */
+
+/* ------------------------------ 1. 令牌桥接 ------------------------------ */
+
+/* 1) 令牌桥接已删除(2026-09-25):设置页/主题/外观/歌词颜色全部走原版 theme_variables.css + theme_manager.js,
+   此处不再把 --bg-main 等映射到参考页变量,也不再把 emerald 强制改成粉色。
+   参考页新组件自带 ref-ui.css 变量,不依赖这座桥。 */
+
+/* ------------------------------ 2. 外壳布局 ------------------------------ */
+
+/* 新外壳底色/字体只作用于新容器,不碰原版 body(原版设置页字体/底色走 app.css + theme_variables.css) */
+#aq-main-wrap,
+#aq-main,
+#aq-tabbar,
+#aqMini {
+    font-family: var(--font);
+}
+
+/* 侧边栏与移动端遮罩在新版布局里不再使用（功能不受影响，标签栏接管导航） */
+#main-sidebar,
+#mobile-sidebar-backdrop {
+    display: none !important;
+}
+
+/* 内容区变成居中的手机窄栏 */
+#aq-main-wrap {
+    justify-content: center;
+    background: var(--bg);
+}
+
+#aq-main {
+    width: 100%;
+    max-width: 430px;
+    margin: 0 auto;
+    background: var(--bg);
+    box-shadow: 0 0 0 0.5px var(--separator);
+    position: relative;
+}
+
+/* 顶栏：参考页是透明大字标题 + 右侧圆钮（含安全区避让，与参考页 .header 一致） */
+#aq-main > header {
+    height: calc(52px + var(--safe-t)) !important;
+    background: var(--bg) !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: calc(8px + var(--safe-t)) 16px 6px !important;
+    box-sizing: border-box !important;
+}
+
+#aq-main > header button[onclick="toggleSidebar()"] {
+    display: none !important;
+}
+
+/* 顶栏登录/账号入口恢复原版显示(原版在 header-user-info 里,设置页登录逻辑依赖它) */
+
+#page-title {
+    display: block !important;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.15;
+}
+
+#sq-header-actions,
+.header-btns {
+    gap: 8px;
+}
+
+/* 每个视图底部留出 标签栏 + 迷你播放条 的高度 */
+[id^="view-"] {
+    padding-bottom: calc(var(--nav) + var(--mini) + var(--safe-b) + 30px) !important;
+}
+
+/* 底部标签栏 */
+#aq-tabbar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 46;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+    padding-bottom: var(--safe-b);
+}
+
+#aq-tabbar .aq-tabbar-inner {
+    pointer-events: auto;
+    width: min(430px, 100%);
+    height: var(--nav);
+    display: flex;
+    align-items: stretch;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.78) 0%, rgba(255, 255, 255, 0.62) 100%);
+    backdrop-filter: saturate(220%) blur(48px);
+    -webkit-backdrop-filter: saturate(220%) blur(48px);
+    border: 0.5px solid rgba(255, 255, 255, 0.55);
+    border-radius: 28px;
+    box-shadow:
+        0 10px 28px rgba(0, 0, 0, 0.09),
+        0 2px 8px rgba(0, 0, 0, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95),
+        inset 0 -0.5px 0 rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+}
+
+html.dark #aq-tabbar .aq-tabbar-inner {
+    background: rgba(28, 28, 30, 0.82);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow:
+        0 8px 28px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.aq-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    border: none;
+    background: transparent;
+    color: var(--label-3);
+    font-family: inherit;
+    font-size: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color .28s cubic-bezier(0.32, 0.72, 0, 1), transform .32s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.aq-tab svg {
+    width: 24px;
+    height: 24px;
+    transition: transform .36s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.aq-tab.on {
+    color: var(--pink);
+}
+
+.aq-tab.on svg {
+    transform: scale(1.12);
+}
+
+.aq-tab:active {
+    transform: scale(0.82);
+}
+
+/* 迷你播放条：第一步先收紧成卡片浮在标签栏之上，第二步再换成参考页的胶囊播放条 */
+#player-footer {
+    position: fixed !important;
+    left: 0;
+    right: 0;
+    bottom: calc(var(--nav) + 8px + var(--safe-b));
+    margin: 0 auto;
+    width: min(406px, calc(100% - 24px));
+    min-height: 0 !important;
+    padding: 8px 12px !important;
+    border-radius: 18px !important;
+    border: 0.5px solid var(--glass-border) !important;
+    background: var(--glass) !important;
+    backdrop-filter: saturate(200%) blur(40px);
+    -webkit-backdrop-filter: saturate(200%) blur(40px);
+    box-shadow: var(--shadow-soft);
+    z-index: 45;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px;
+}
+
+#player-footer #player-song-info {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin-bottom: 0 !important;
+    padding-right: 0 !important;
+    align-items: center !important;
+}
+
+#player-footer #player-song-info > div:first-child {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 10px !important;
+}
+
+/* 隐藏底部条的次要按钮群（下载/音效/评论/歌词卡/队列），它们仍可从播放页进入 */
+#player-footer #player-song-info > div:nth-child(3) {
+    display: none !important;
+}
+
+/* 进度行在迷你条里隐藏，播放页里仍有完整进度条 */
+#player-footer > div:nth-child(2) > div:first-child {
+    display: none !important;
+}
+
+#player-footer > div:nth-child(2) {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    max-width: none !important;
+    padding: 0 !important;
+}
+
+/* 只保留 上一首 / 播放 / 下一首 */
+#player-footer .flex.items-center.gap-6 > * {
+    display: none !important;
+}
+
+#player-footer .flex.items-center.gap-6 > button:not([id]) {
+    display: flex !important;
+}
+
+#player-footer .flex.items-center.gap-6 > #btn-play {
+    display: flex !important;
+}
+
+#player-footer .flex.items-center.gap-6 {
+    gap: 4px !important;
+}
+
+/* 桌面专用的最右侧控制区（下载/音效/评论/歌词卡/队列/音量）隐藏 */
+#player-footer > div:nth-child(3) {
+    display: none !important;
+}
+
+/* 收起/展开面板按钮位置调整 */
+#btn-expand-panel {
+    bottom: calc(var(--nav) + var(--mini) + 18px + var(--safe-b)) !important;
+    right: calc(50% - 215px + 12px) !important;
+}
+
+#btn-collapse-panel {
+    right: calc(50% - 215px + 12px) !important;
+}
+
+/* ------------------------------ 3. 新组件补充 ------------------------------ */
+
+/* -------------------- 3.0 迷你播放条（参考页胶囊） -------------------- */
+
+/* 原底栏只作为功能载体（歌词/进度/按钮都在里面），视觉上由胶囊条取代 */
+#player-footer,
+#btn-expand-panel,
+#btn-collapse-panel {
+    display: none !important;
+}
+
+#aqMini {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: calc(var(--nav) + 8px + var(--safe-b));
+    margin: 0 auto;
+    width: min(406px, calc(100% - 20px));
+    height: var(--mini);
+    z-index: 45;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 0 12px;
+    border-radius: 999px;
+    background: var(--glass);
+    backdrop-filter: saturate(220%) blur(48px);
+    -webkit-backdrop-filter: saturate(220%) blur(48px);
+    border: 0.5px solid var(--glass-border);
+    box-shadow:
+        0 10px 32px rgba(0, 0, 0, 0.10),
+        0 2px 10px rgba(0, 0, 0, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    overflow: hidden;
+}
+
+#aqMini.show {
+    display: flex;
+}
+
+.aq-mini-main {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.aq-mini-art {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--surface-2);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+}
+
+.aq-mini-art img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.aq-mini-art.spin img {
+    animation: aqSpin 12s linear infinite;
+}
+
+@keyframes aqSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.aq-mini-meta {
+    /* 参考页 .mini-meta{flex:1;min-width:0}：缺 flex:1 时歌名/歌词被压成 ~53px 窄条，
+       右侧空出 100+px，歌词看着只有指甲盖大一块且被裁得只剩几个字 */
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.aq-mini-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.aq-mini-sub {
+    font-size: 11.5px;
+    color: var(--label-2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.aq-mini-btns {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-shrink: 0;
+}
+
+/* 对齐参考页：透明底 40px 圆形按钮，图标 22px，无填充主色按钮 */
+.aq-mini-btns button {
+    border: none;
+    background: transparent;
+    color: var(--label);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    font-size: 20px;
+    transition: transform .2s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+.aq-mini-btns button:active {
+    transform: scale(.85);
+}
+
+.aq-mini-btns i { font-size: 20px; line-height: 1; }
+
+/* 进度：对齐参考页 —— 不再用底部 2px 细线，而是铺满整条高度的粉色渐变层。
+ * 前沿无硬边：右沿用 mask 羽化到透明；封面/文字/按钮 z-index:2 压在其上。 */
+.aq-mini-bar { display: none !important; }
+
+.aq-mini-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    z-index: 0;
+    pointer-events: none;
+    border-radius: inherit;
+    overflow: hidden;
+    transition: width .2s linear;
+    background: linear-gradient(90deg,
+        rgba(250, 45, 72, 0.26) 0%,
+        rgba(250, 45, 72, 0.18) 55%,
+        rgba(250, 45, 72, 0.08) 82%,
+        rgba(250, 45, 72, 0.02) 94%,
+        transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 72%, rgba(0, 0, 0, .45) 88%, transparent 100%);
+    mask-image: linear-gradient(90deg, #000 0%, #000 72%, rgba(0, 0, 0, .45) 88%, transparent 100%);
+}
+html.dark .aq-mini-fill {
+    background: linear-gradient(90deg,
+        rgba(250, 45, 72, 0.32) 0%,
+        rgba(250, 45, 72, 0.20) 55%,
+        rgba(250, 45, 72, 0.08) 82%,
+        rgba(250, 45, 72, 0.02) 94%,
+        transparent 100%);
+}
+
+/* 进度粒子：位于封面/文字之下（z-index 0） */
+.aq-mini-particles {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+    border-radius: inherit;
+}
+.aq-mini-particle {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 3.5px;
+    height: 3.5px;
+    margin: -1.75px 0 0 -1.75px;
+    border-radius: 50%;
+    background: rgba(250, 45, 72, .75);
+    filter: none;
+    pointer-events: none;
+    animation: aq-mini-particle-fly var(--dur, 2.2s) cubic-bezier(.25, .5, .35, 1) forwards;
+    will-change: transform, opacity;
+}
+html.dark .aq-mini-particle { background: rgba(255, 130, 150, .8); }
+@keyframes aq-mini-particle-fly {
+    0%   { transform: translate3d(var(--sx, 0), var(--y0, 0), 0) scale(var(--s0, 1)); opacity: 0; }
+    12%  { opacity: .85; }
+    55%  { opacity: .8; }
+    85%  { opacity: .45; }
+    100% { transform: translate3d(var(--dx, -80px), var(--dy, -8px), 0) scale(.35); opacity: 0; }
+}
+
+/* 封面 / 歌名 / 按钮压在进度与粒子之上 */
+.aq-mini-art,
+.aq-mini-meta,
+.aq-mini-btns { position: relative; z-index: 2; }
+
+/* -------------------- 3.1 全屏播放页（Now Playing） -------------------- */
+
+/* -------------------- 3.2 搜索页（参考页风格） -------------------- */
+
+/* -------------------- 3.3 设置页（2026-09-25：整节删除，恢复原版） --------------------
+ * 设置页 DOM/样式/行为全部走原版 index.html + app.css + theme_variables.css + app.js，
+ * 此处不再覆盖 #view-settings 的任何样式（卡片/输入框/按钮/开关/标题/行距都不动）。
+ * 之前的问题：这里把卡片底色、输入框底色、按钮圆角、分区标题颜色全换成参考页变量，
+ * 导致“歌曲播放页背景”等下拉框、下拉选项、开关颜色与原版对不上；删掉即恢复原版显示。
+ * 仅保留一条布局补偿：设置视图底部给迷你条+标签栏留出空间（不改颜色/字体/边框）。 */
+#view-settings {
+    padding-bottom: calc(var(--nav) + var(--mini) + 30px + var(--safe-b)) !important;
+}
+
+
+/* 原搜索页元素保留（仅隐藏），由 search-ui.js 注入的新界面接管 */
+#view-search {
+    padding: 0 !important;
+}
+
+#view-search > *:not(#aqSearch) {
+    display: none !important;
+}
+
+.aq-search {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px 20px calc(var(--nav) + var(--mini) + 30px + var(--safe-b));
+}
+
+.aq-search .search-field {
+    margin-top: 2px;
+}
+
+.aq-search input[type="search"]::-webkit-search-cancel-button {
+    display: none;
+}
+
+.aq-search-clear {
+    border: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--fill);
+    color: var(--label-2);
+    font-size: 10px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.aq-search-clear.hide {
+    display: none;
+}
+
+.aq-tipbox {
+    margin-top: 8px;
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--fill-2);
+}
+
+.aq-tipbox.hide {
+    display: none;
+}
+
+.aq-tip {
+    padding: 11px 14px;
+    font-size: 14px;
+    color: var(--label-2);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    border-bottom: 0.5px solid var(--separator);
+}
+
+.aq-tip:last-child {
+    border-bottom: none;
+}
+
+.aq-tip i {
+    font-size: 12px;
+    color: var(--label-3);
+}
+
+.aq-search-body {
+    padding: 4px 0 8px;
+}
+
+.aq-artist-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px 10px;
+}
+
+.aq-artist-item {
+    text-align: center;
+    cursor: pointer;
+}
+
+.aq-artist-item:active {
+    opacity: .85;
+}
+
+.aq-artist-item img {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--surface-2);
+    display: block;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.aq-artist-item .n {
+    margin-top: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+/* （已删除 2026-09-25：播放页底色/#detail-bg-cover 强制覆盖。
+ * 原版 applyPlayerBackground(mode) 按设置切换：
+ * blur=封面虚化显示 / solid=隐藏封面纯面板色 / dark=隐藏封面纯黑。
+ * 之前这里用 !important 锁死黑底+固定虚化，导致选“纯色/黑色”与原版不一致。） */
+
+/* 播放页顶部导航：只做手机状态栏避让（原版 h-20 高度/样式不动） */
+#view-player-detail > div[class*="top-0"] {
+    padding-top: var(--safe-t) !important;
+    box-sizing: border-box !important;
+}
+
+/* （已删除：#player-detail-bg-overlay 渐变罩，原版 class 由 applyPlayerBackground 按 blur/solid/dark 三态切换。） */
+
+/* （已删除：封面圆角/阴影/尺寸、标题字号颜色、#toggle-hint 隐藏，全部恢复原版 app.css。） */
+
+/* -------------------- 歌词区（2026-09-25：整节删除，恢复原版） --------------------
+ * 当前行颜色/字号/粗细、逐字扫字渐变、荧光开关，全部走原版：
+ * css/app.css（.lyric-line.active 用 --c-500 主题色、字号 calc(var(--lyric-font-size)*1.3)；
+ * .enable-lyric-glow 控制 drop-shadow 荧光；逐字 .word-item/.ext-item 用主题渐变扫字）。
+ * 之前这里用 !important 把当前行锁成暗红 24px、关掉全部荧光、逐字改透明/纯色，
+ * 导致主题风格/荧光开关/字号设置与原版对不上；删掉即恢复“设置后该咋显示就咋显示”。
+ * 仅保留居中对齐（原版 app.css 是左对齐 fit-content，播放页居中是布局需求，不碰颜色/荧光）：
+ */
+#view-player-detail #lyric-content .lyric-line {
+    width: auto !important;
+    max-width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    text-align: center !important;
+}
+
+/* 全屏播放页的底部控制区（由 player-ui.js 注入）。
+ * 注意：它是 #view-player-detail 的正常流子块，z-index 只管它和兄弟的叠放，
+ * 千万别改成 absolute/fixed —— 一旦脱离正常流，上面的歌词区就开始“裸奔”，
+ * 表现就是封面盖歌词、按钮被腰斩。 */
+.aq-np-controls {
+    position: relative;
+    z-index: 25;
+    padding: 12px 20px calc(18px + var(--safe-b));
+    background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.35) 40%, rgba(0, 0, 0, 0.55) 100%);
+}
+
+/* ============ 全屏播放页控件 ============
+ * 浅色深字，html.dark 深色时切白字（白底上白色按钮看不见，故不用纯白）。 */
+
+.aq-np-progress {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: rgba(28, 28, 30, 0.5);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+}
+html.dark .aq-np-progress {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.aq-np-track {
+    position: relative;
+    flex: 1;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.aq-np-track::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 3px;
+    border-radius: 3px;
+    background: rgba(28, 28, 30, 0.22);
+}
+html.dark .aq-np-track::before {
+    background: rgba(255, 255, 255, 0.28);
+}
+
+.aq-np-fill {
+    position: relative;
+    height: 3px;
+    width: 0;
+    border-radius: 3px;
+    background: var(--np-accent, var(--pink, #fa2d48));
+}
+
+.aq-np-fill::after {
+    content: '';
+    position: absolute;
+    right: -5px;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    margin-top: -5px;
+    border-radius: 50%;
+    background: var(--np-accent, var(--pink, #fa2d48));
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    transition: opacity .2s;
+}
+
+.aq-np-track:hover .aq-np-fill::after,
+.aq-np-track:active .aq-np-fill::after {
+    opacity: 1;
+}
+
+/* 主控行 */
+.aq-np-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 26px;
+    margin-top: 6px;
+    padding: 8px 18px 10px;
+    color: #1c1c1e;
+    overflow: visible;
+}
+html.dark .aq-np-row {
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.aq-np-row button {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    color: inherit;
+    font-family: inherit;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    opacity: 0.88;
+    min-width: 44px;
+    min-height: 44px;
+}
+
+.aq-np-row button:active {
+    transform: scale(0.92);
+}
+
+.aq-np-row .side {
+    font-size: 24px;
+    color: inherit;
+}
+
+.aq-np-row .side.txt {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.aq-np-row #aqNpPlay {
+    width: 55px;
+    height: 64px;
+    background: transparent;
+    box-shadow: none;
+    color: inherit;
+    font-size: 34px;
+    border-radius: 12px;
+}
+
+.aq-np-row #aqNpNext,
+.aq-np-row #aqNpPrev {
+    font-size: 24px;
+}
+
+/* 功能胶囊（毛玻璃框 + 均分按钮）；more 行超宽时可横滑 */
+.aq-np-secondary {
+    display: flex;
+    align-items: stretch;
+    /* 单胶囊八按钮：默认左右两端顶满，超宽时横滑 */
+    margin: 4px 18px calc(18px + var(--safe-b));
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 6px 4px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(28px) saturate(170%);
+    -webkit-backdrop-filter: blur(28px) saturate(170%);
+    border: 0.5px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    color: rgba(28, 28, 30, 0.72);
+    /* 八按钮总宽 8×46=368 > 胶囊 324：默认收紧，能滑 */
+    gap: 0;
+    justify-content: flex-start;
+}
+html.dark .aq-np-secondary {
+    background: rgba(28, 28, 30, 0.55);
+    border: 0.5px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+    color: rgba(255, 255, 255, 0.78);
+}
+.aq-np-secondary::-webkit-scrollbar { display: none; }
+
+.aq-np-secondary button {
+    flex: 1 1 0;
+    min-width: 46px;
+    min-height: 46px;
+    border: none;
+    background: transparent;
+    color: inherit;
+    font-family: inherit;
+    font-size: 11px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    gap: 3px;
+    padding: 5px 4px;
+    border-radius: 12px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: rgba(250, 45, 72, 0.15);
+    touch-action: manipulation;
+}
+.aq-np-secondary button i {
+    font-size: 22px;
+    line-height: 1;
+}
+
+/* 胶囊图标：24px 线性 SVG，随文字变色 */
+.aq-np-secondary button svg {
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+}
+/* 喜欢：平时描边心，激活后实心粉 */
+#aqNpFav svg { fill: none; }
+#aqNpFav.fav-on svg, #aqNpFav.liked svg, #aqNpFav.on svg { fill: var(--pink, #fa2d48); stroke: var(--pink, #fa2d48); }
+/* 音质图标线条略粗 */
+#aqNpQuality svg { stroke-width: 2.35; }
+
+.aq-np-secondary button:active {
+    opacity: 0.45;
+    transform: scale(0.92);
+}
+
+/* 激活态：粉色（深色下白色） */
+.aq-np-secondary button.on,
+.aq-np-secondary button.liked,
+.aq-np-secondary button.fav-on {
+    color: var(--pink, #fa2d48);
+}
+html.dark .aq-np-secondary button.on,
+html.dark .aq-np-secondary button.liked,
+html.dark .aq-np-secondary button.fav-on {
+    color: #fff;
+}
+
+/* 新主页/资料库的滚动容器（对应参考页的 .page） */
+.aq-page {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 20px 16px;
+}
+
+/* 通用显隐（参考页兄弟样式里也有 .ch-grid.hide / .pl-grid.hide） */
+.hide {
+    display: none !important;
+}
+
+/* 顶部大标题（现在就听 / 资料库 / 设置） */
+.aq-h1 {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.15;
+    margin: 6px 0 16px;
+}
+
+/* 平台切换胶囊（对应参考页 .plat-wrap / .plat-menu） */
+.aq-plat-wrap {
+    position: relative;
+}
+
+.aq-plat-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    height: 34px;
+    padding: 0 12px;
+    border: none;
+    border-radius: 17px;
+    background: var(--fill);
+    color: var(--label);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.aq-plat-btn .caret {
+    font-size: 9px;
+    color: var(--label-3);
+}
+
+.aq-plat-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 6px);
+    min-width: 150px;
+    padding: 6px;
+    border-radius: 14px;
+    background: var(--glass);
+    backdrop-filter: saturate(200%) blur(40px);
+    -webkit-backdrop-filter: saturate(200%) blur(40px);
+    border: 0.5px solid var(--glass-border);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.14);
+    z-index: 60;
+}
+
+/* 音源菜单默认 z-index:60 就够（顶栏层级）。播放页里的「切源」按钮不走这个菜单，
+ * 改走播放页自己的 #aqQPop 弹层（z-index 8001）—— 因为 .aq-plat-wrap 在 DOM 很靠前，
+ * 而 #view-player-detail 是 z-index:80 的全屏层，会把它整个盖住。 */
+
+.aq-plat-wrap.open .aq-plat-menu {
+    display: block;
+}
+
+.aq-plat-menu button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--label);
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    text-align: left;
+}
+
+.aq-plat-menu button.on {
+    color: var(--pink);
+    font-weight: 700;
+    background: var(--pink-soft);
+}
+
+/* 频道 / 歌单 / 榜单 / 排行榜 的小分段控件 */
+.aq-seg {
+    display: flex;
+    gap: 4px;
+    background: var(--fill);
+    border-radius: 10px;
+    padding: 2px;
+}
+
+.aq-seg button {
+    border: none;
+    background: transparent;
+    color: var(--label-3);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background .2s, color .2s;
+}
+
+.aq-seg button.on {
+    background: var(--bg-pure);
+    color: var(--label);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+html.dark .aq-seg button.on {
+    background: var(--surface-2);
+}
+
+/* 分类标签条（歌单分类） */
+.aq-tagrow {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 2px 0 10px;
+    scrollbar-width: none;
+}
+
+.aq-tagrow::-webkit-scrollbar {
+    display: none;
+}
+
+.aq-tag {
+    flex: 0 0 auto;
+    padding: 7px 14px;
+    border: none;
+    border-radius: 18px;
+    background: var(--fill);
+    color: var(--label-2);
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.aq-tag.on {
+    background: var(--c-500);
+    color: #fff;
+    font-weight: 600;
+}
+
+/* 排行榜：横向滑动的三行三列九宫格。
+ * 之前是「榜单 / 排行榜」两个 tab 切换，且排行榜是一行横滑；
+ * 现在统一成一个排行榜入口，按 3 列 × 3 行一屏 9 个，左右滑动看更多。
+ * 用 grid-auto-flow: column + grid-template-rows: repeat(3,1fr)，
+ * 天然就是"每屏 3 行 3 列"且按列横向填充。 */
+.aq-board-grid {
+    display: grid;
+    grid-template-rows: repeat(3, auto);
+    grid-auto-flow: column;
+    /* 3 列 * 30.5% + 2 个 10px 间距会超出容器宽，导致第 3 列被裁掉几 px；
+     * 这里用 calc 保证 3 列 + 间距刚好铺满可视宽度。 */
+    grid-auto-columns: calc((100% - 20px) / 3);
+    gap: 12px 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0 2px 10px;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.aq-board-grid::-webkit-scrollbar {
+    display: none;
+}
+
+/* 每列三张卡对齐同一行高 */
+.aq-board-grid .rank-card {
+    scroll-snap-align: start;
+    min-width: 0;
+}
+
+/* 榜单少于一屏时仍按 3 列排布，剩余位置留空（不拉伸变形，保持与右侧内容列对齐） */
+.aq-board-grid.is-few {
+    grid-auto-columns: calc((100% - 20px) / 3);
+}
+
+/* 榜单/歌单/歌曲详情弹层（参考页风格）。
+ * 注意：播放页本身 z-index:80，所以同样在播放页里打开的「播放模式 / 音质」
+ * 弹层必须高于 80 —— 提到 8002/8003（仅次于 #aqQPop 的 8000/8001），
+ * 否则表现就是「点了没反应，关掉播放页才看见」。 */
+.aq-sheet-mask {
+    position: fixed;
+    inset: 0;
+    z-index: 8002;
+    background: rgba(0, 0, 0, 0.42);
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .28s ease;
+}
+
+.aq-sheet-mask.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.aq-sheet {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0 auto;
+    width: min(430px, 100%);
+    max-height: 86vh;
+    z-index: 8003;
+    display: flex;
+    flex-direction: column;
+    border-radius: 20px 20px 0 0;
+    background: var(--bg-pure);
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.28);
+    transform: translateY(102%);
+    transition: transform .34s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+html.dark .aq-sheet {
+    background: var(--surface);
+}
+
+.aq-sheet.open {
+    transform: translateY(0);
+}
+
+.aq-sheet-head {
+    position: relative;
+    flex-shrink: 0;
+    padding: 18px 18px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 0.5px solid var(--separator);
+}
+
+.aq-sheet-head .grip {
+    width: 38px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--fill);
+}
+
+.aq-sheet-cover {
+    width: 116px;
+    height: 116px;
+    border-radius: 14px;
+    object-fit: cover;
+    background: var(--surface-2);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+}
+
+.aq-sheet-title {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    text-align: center;
+}
+
+.aq-sheet-sub {
+    font-size: 12px;
+    color: var(--label-3);
+}
+
+.aq-sheet-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px;
+}
+
+.aq-sheet-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 8px 14px calc(16px + var(--safe-b));
+}
+
+.aq-sheet-close {
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 50%;
+    background: var(--fill);
+    color: var(--label-2);
+    cursor: pointer;
+}
+
+.aq-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: none;
+    border-radius: 20px;
+    padding: 9px 16px;
+    background: var(--c-500);
+    color: #fff;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.aq-btn.ghost {
+    background: var(--fill);
+    color: var(--label);
+}
+
+.aq-btn:active {
+    transform: scale(0.97);
+    opacity: 0.9;
+}
+
+/* 提示条 */
+.aq-toast {
+    position: fixed;
+    left: 50%;
+    bottom: calc(var(--nav) + var(--mini) + 30px + var(--safe-b));
+    transform: translateX(-50%) translateY(8px);
+    z-index: 90;
+    padding: 9px 16px;
+    border-radius: 999px;
+    background: rgba(28, 28, 30, 0.88);
+    color: #fff;
+    font-size: 13px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .24s ease, transform .24s ease;
+    backdrop-filter: blur(20px);
+}
+
+.aq-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* 歌曲行分隔（参考页风格） */
+.aq-songlist .song {
+    border-bottom: 0.5px solid var(--separator);
+}
+
+.aq-songlist .song:last-child {
+    border-bottom: none;
+}
+
+.aq-loading {
+    padding: 26px 0;
+    text-align: center;
+    color: var(--label-3);
+    font-size: 13px;
+}
+
+/* 资料库页的入口区 */
+.aq-lib-entry {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 0.5px solid var(--separator);
+    cursor: pointer;
+}
+
+.aq-lib-entry:last-child {
+    border-bottom: none;
+}
+
+.aq-lib-entry .ico {
+    width: 30px;
+    text-align: center;
+    color: var(--pink);
+    font-size: 17px;
+}
+
+.aq-lib-entry .label {
+    flex: 1;
+    font-size: 17px;
+}
+
+.aq-lib-entry .count {
+    font-size: 14px;
+    color: var(--label-3);
+}
+
+/* 原有页面（搜索/设置/本地音乐等）的观感对齐 */
+.t-bg-panel {
+    background-color: var(--bg) !important;
+}
+
+.t-bg-main {
+    background-color: var(--bg) !important;
+}
+
+.t-bg-item-hover:hover,
+.hover\:t-bg-item-hover:hover {
+    background-color: var(--fill-2) !important;
+}
+
+.glass,
+#aq-main > header.glass {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--fill);
+    border-radius: 3px;
+}
+
+/* （已删除：设置页圆角统一，原版 input/select/button 圆角保持不变） */
+
+/* ============================================================
+   UI Pro Max 落地：参考页 Dock / 播放页显示规范
+   依据：
+   - 固定层不能互相遮挡：Dock 单一 fixed 容器，播放页打开时整体下移隐藏
+   - 固定导航不能盖内容：[id^=view-] 底部留足 mini + nav + safe-area
+   - 移动端触控目标至少 44px
+   - 窄屏文字不硬裁切
+   ============================================================ */
+
+/* Dock：唯一固定底栏层。
+ * 双态对齐参考页 #dock：
+ *   展开 .aq-dock:not(.collapsed) → [mini 全宽] + [tabbar 全宽]，gap 4px
+ *   收合 .aq-dock.collapsed       → [侧钮 52] [mini 胶囊 flex:1] [侧钮 52]，gap 0
+ * 侧键展开时完全脱离文档流（宽高 0 + absolute），不占 gap。
+ * 播放页打开时整个 Dock 下移隐藏，避免遮挡播放页底部控件。 */
+.aq-dock {
+    position: fixed;
+    left: 13px;
+    right: 13px;
+    bottom: calc(16px + var(--safe-b));
+    z-index: 59;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    pointer-events: none;
+    transition:
+        gap .85s cubic-bezier(.22, 1, .36, 1),
+        transform .48s cubic-bezier(.22, 1, .36, 1),
+        opacity .32s ease;
+    will-change: transform, opacity;
+}
+.aq-dock > * { pointer-events: auto; }
+
+/* iOS IPA：底栏贴底，不叠加 safe-area，避免高出一截 */
+@supports (-webkit-touch-callout: none) {
+    .aq-dock { bottom: 16px !important; }
+}
+
+/* 播放页打开：整个 Dock（mini + tabbar）一起隐藏 */
+body.aq-np-open .aq-dock {
+    transform: translateY(calc(100% + 24px));
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* 侧键：展开时零尺寸脱离流，收合时淡入放大成 52px 圆形玻璃钮 */
+.aq-dock-side {
+    position: absolute;
+    width: 0;
+    min-width: 0;
+    max-width: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    pointer-events: none;
+    transform: scale(.72);
+    border: 0;
+    border-radius: 50%;
+    color: var(--label-3, rgba(60, 60, 67, .55));
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    background: rgba(255, 255, 255, .72);
+    backdrop-filter: saturate(180%) blur(28px);
+    -webkit-backdrop-filter: saturate(180%) blur(28px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, .06), inset 0 0.5px 0 rgba(255, 255, 255, .9);
+    transition:
+        opacity .7s cubic-bezier(.22, 1, .36, 1),
+        transform .75s cubic-bezier(.22, 1, .36, 1),
+        width .75s cubic-bezier(.22, 1, .36, 1),
+        min-width .75s cubic-bezier(.22, 1, .36, 1),
+        max-width .75s cubic-bezier(.22, 1, .36, 1),
+        height .75s cubic-bezier(.22, 1, .36, 1),
+        border-width .4s ease;
+}
+.aq-dock-side.on { color: var(--pink, #fa2d48); }
+.aq-dock-side:active { transform: scale(.9); }
+.aq-dock-side svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* 收合态：横向排布，mini 变胶囊夹在两个侧钮之间 */
+.aq-dock.collapsed {
+    flex-direction: row;
+    align-items: center;
+    gap: 0;
+    justify-content: space-between;
+}
+.aq-dock.collapsed .aq-dock-side {
+    position: relative;
+    opacity: 1;
+    width: 52px;
+    min-width: 52px;
+    max-width: 52px;
+    height: 52px;
+    flex: 0 0 52px;
+    pointer-events: auto;
+    transform: scale(1);
+    border-width: .5px;
+}
+/* 收合态 tabbar：缩放淡出并脱离流（不用 display:none，才能看到过程） */
+.aq-dock.collapsed #aq-tabbar {
+    opacity: 0 !important;
+    max-height: 0 !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-width: 0 !important;
+    transform: scale(.88) translateY(18px);
+    pointer-events: none;
+    overflow: hidden;
+    width: 0 !important;
+    min-width: 0 !important;
+    flex: 0 0 0 !important;
+    position: absolute !important;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    visibility: hidden;
+}
+
+/* 收合态 mini：胶囊 + 左右各 8px（替代 gap，保证与侧钮对称） */
+.aq-dock.collapsed #aqMini {
+    flex: 1 1 0;
+    width: auto !important;
+    min-width: 120px;
+    max-width: none;
+    height: 52px !important;
+    border-radius: 999px;
+    overflow: hidden;
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+    border-color: var(--glass-border);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, .06), inset 0 0.5px 0 rgba(255, 255, 255, .9);
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    margin: 0 8px;
+}
+/* 收合态细节：封面 44→36，歌名 13px，歌手行折叠，下一首收起 */
+.aq-dock.collapsed .aq-mini-art { width: 36px; height: 36px; }
+.aq-dock.collapsed .aq-mini-name { font-size: 13px; }
+.aq-dock.collapsed .aq-mini-artist {
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: opacity .45s ease, max-height .55s ease;
+}
+.aq-dock:not(.collapsed) .aq-mini-artist {
+    opacity: 1;
+    max-height: 20px;
+    transition: opacity .55s ease .1s, max-height .6s ease;
+}
+.aq-dock.collapsed #aqMiniNext {
+    opacity: 0;
+    width: 0;
+    min-width: 0;
+    overflow: hidden;
+    pointer-events: none;
+    transition: opacity .4s ease, width .55s cubic-bezier(.22, 1, .36, 1);
+}
+.aq-dock:not(.collapsed) #aqMiniNext {
+    opacity: 1;
+    width: 40px;
+    transition: opacity .5s ease .15s, width .6s cubic-bezier(.22, 1, .36, 1);
+}
+/* 迷你播放器与导航栏现在同属 Dock，取消各自的 fixed/bottom 占位，
+ * 宽度铺满 Dock（对齐参考页 .mini{width:100%} / .tabbar{width:100%}） */
+#aqMini,
+#aq-tabbar {
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    width: 100%;
+    margin: 0;
+}
+#aq-tabbar {
+    padding-bottom: 0;
+}
+
+/* 导航项满足 44px 最小触控高度；
+ * 迷你条按钮视觉对齐参考页 40px，只保留 44px 触控高度（已超 WCAG 2.2 的 24px 要求） */
+.aq-tab {
+    min-height: 44px;
+}
+.aq-mini-btns button {
+    min-height: 44px;
+}
+.aq-mini-btns #aqMiniNext {
+    min-width: 0;
+}
+
+/* 主页等页面滚动到底：最后一条内容不被 Dock 覆盖 */
+[id^="view-"]:not(#view-player-detail) {
+    padding-bottom: calc(var(--nav) + var(--mini) + var(--safe-b) + 30px) !important;
+}
+#view-home,
+.aq-search {
+    scroll-padding-bottom: calc(var(--nav) + var(--mini) + var(--safe-b) + 20px);
+}
+
+/* 播放页全屏：不再为已隐藏的原版底栏留 pb-24，释放整屏高度给参考页式内容 */
+#view-player-detail {
+    padding-bottom: 0 !important;
+    z-index: 80 !important;
+}
+
+/* 播放页主内容：顶部给返回栏让位，底部紧贴控件。
+ * 注意别在这里加 margin-bottom —— #player-detail-container 是 flex:1 的“弹簧”，
+ * 它自己会把剩余空间吃满；一旦再加 mb，弹簧就多出一截，表现就是
+ * 控件区被顶出视口、屏幕中间留白。 */
+#view-player-detail #player-detail-container {
+    padding-top: calc(52px + var(--safe-t)) !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+    gap: 8px !important;
+    justify-content: flex-start !important;
+}
+
+/* 顶部只保留返回按钮，不再叠标题 */
+#view-player-detail > div[class*="top-0"] {
+    padding-top: calc(12px + var(--safe-t)) !important;
+    height: auto !important;
+    min-height: 56px !important;
+}
+
+/* 封面：在手机竖屏下按可用高度自适应，不把内容挤到视口外 */
+#view-player-detail #mobile-player-cover-container {
+    width: min(68vw, 40vh) !important;
+    height: auto !important;
+    max-width: 320px !important;
+    max-height: 34vh !important;
+    flex: 0 0 auto;
+}
+
+/* 歌曲信息完整显示；不因信息区太高而被裁切。
+ * 注意 #lyrics-wrapper 是 column flex：标题块 flex:0 不伸缩，
+ * 歌词区 flex:0 1 auto 只能在“剩余空间”里伸 —— 之前 wrap 被锁 flex:0 0 auto，
+ * 剩余空间是 0，歌词区就被钉死在 max-height:22vh=176px。改成 flex:1 让它
+ * 跟着内容区弹簧一起长，歌词少时收起、多时顶到 22vh 内部滚。 */
+#view-player-detail #lyrics-wrapper {
+    min-height: 0 !important;
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+#view-player-detail #lyrics-wrapper > div:first-child {
+    flex: 0 0 auto;
+    /* 原版 mb-4(16px)+我们之前又叠了 8px，标题块被撑到 100px。
+     * 歌名16px+歌手16px+提示10px 实际只要 56px，多出来的全是空气 ——
+     * 表现就是封面和歌词之间一大片空白。压回紧凑。 */
+    padding-top: 0 !important;
+    padding-bottom: 2px !important;
+    margin-bottom: 4px !important;
+}
+
+/* 歌词区：歌词有多有少，高度跟着内容走，上限 22vh，超了内部滚。
+ * 注意它和封面不是父子关系 —— 封面收缩时它不会跟着长，所以这里给固定上限，
+ * 而不是指望 flex 把它撑开。
+ * 另外别指望 scrollIntoView({block:center})：它会把整页所有能滚的祖先一起滚，
+ * 当前行直接飞出歌词区、盖住下面的进度条。滚动只走 app.js 的 scrollToActiveLine
+ *（手动算 offsetTop - 0.35*容器高，只滚 #lyric-container 自己）。 */
+#view-player-detail #lyric-container {
+    /* 原版 class 自带 flex-1（flex:1 1 0%），上面的 flex:0 1 auto 拼不过它 ——
+     * 表现就是歌词区永远 176px 写死。flex-grow 必须显式压到 0 才能跟内容走。 */
+    flex: 0 1 auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: 22vh !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    overscroll-behavior-y: contain !important;
+    -webkit-overflow-scrolling: touch;
+}
+#view-player-detail #lyric-content {
+    /* 26vh 垫片的前提是“歌词区足够高、当前行能滚到中间”。
+     * 歌词区现在只有 99px 高，208px 垫片直接把第一行顶到控件区下面 ——
+     * 表现就是歌词盖住进度条和播放键。垫片改小，刚好够首行顶对齐。 */
+    padding-top: 24px !important;
+    padding-bottom: 26vh !important;
+    gap: 6px !important;
+}
+
+/* 播放页控件不再绝对定位盖住歌词：作为 #view-player-detail 的正常流底栏。
+ * 这样上方的 #player-detail-container 能准确计算出剩余高度，歌词不会再只露出一点。
+ * 同时必须清掉 586 行那条 absolute 时代的底部渐变遮罩 —— 改成正常流之后它会
+ * 变成一整块贴底的灰黑色块，看起来就是「底部灰蒙蒙」。 */
+#view-player-detail {
+    display: flex !important;
+    flex-direction: column !important;
+}
+/* [Fix] player close: .hidden must win over display:flex !important, so the collapse
+ * button truly hides the player page instead of popping back after animation. */
+#view-player-detail.hidden {
+    display: none !important;
+}
+#view-player-detail > #player-detail-container {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+}
+.aq-np-controls {
+    position: relative !important;
+    flex: 0 0 auto;
+    inset: auto !important;
+    width: 100%;
+    /* 三行（主控/胶囊/more）总高约 270px，32vh(256px) 会把 more 行裁掉 12px
+     * 看着像“被吞了半截”。给足 46vh 让它完整显示。 */
+    max-height: 46vh;
+    overflow-y: visible;
+    background: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    padding: 8px 18px calc(10px + var(--safe-b)) !important;
+}
+.aq-np-row button,
+.aq-np-secondary button {
+    min-width: 44px;
+    min-height: 44px;
+}

@@ -1,0 +1,2718 @@
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Glassmorphism utilities */
+.glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.active-tab {
+    background-color: var(--c-50);
+    color: var(--c-600);
+    border-right: 3px solid var(--c-600);
+}
+
+.active-sub-item {
+    color: var(--c-600) !important;
+}
+
+/* ==========================================================================
+   侧边栏歌单项：丝滑动滑动效（动态放大缩小、悬浮变宽占满bar空间）
+   ========================================================================== */
+.playlist-sidebar-item {
+    position: relative;
+    margin: 2px 4px;
+    padding: 5px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    user-select: none;
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                margin 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                padding 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                background-color 0.18s ease,
+                box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: center left;
+    will-change: transform, margin, padding;
+}
+
+/* 鼠标悬浮：丝滑放大、向两侧自然扩展变宽、充分利用侧边栏空间、浮雕微光影 */
+.playlist-sidebar-item:hover {
+    margin-left: 1px;
+    margin-right: 1px;
+    padding-left: 9px;
+    padding-right: 7px;
+    transform: scale(1.02);
+    z-index: 10;
+    box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.1), 0 0 0 1px color-mix(in srgb, var(--c-500) 22%, transparent);
+}
+
+:root[data-appearance="dark"] .playlist-sidebar-item:hover {
+    box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.45), 0 0 0 1px color-mix(in srgb, var(--c-500) 28%, transparent);
+}
+
+/* 选中高亮状态 */
+.playlist-sidebar-item.active-sub-item {
+    background-color: color-mix(in srgb, var(--c-500) 14%, transparent) !important;
+    color: var(--c-600) !important;
+    font-weight: 500;
+}
+
+:root[data-appearance="dark"] .playlist-sidebar-item.active-sub-item {
+    background-color: color-mix(in srgb, var(--c-500) 20%, transparent) !important;
+}
+
+/* 拖拽排序时抑制放大，避免动画重叠抖动 */
+.sortable-ghost,
+.sortable-chosen {
+    transform: none !important;
+}
+
+/* 拖拽手柄紧凑微调 */
+.playlist-sidebar-item .favorite-sidebar-drag-handle {
+    margin-right: 5px;
+}
+
+/* 图标微悬浮动效 */
+.playlist-sidebar-item .sidebar-item-icon {
+    width: 1.15rem;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+}
+
+.playlist-sidebar-item:hover .sidebar-item-icon {
+    transform: scale(1.12);
+    color: var(--c-500);
+}
+
+/* 侧边栏歌曲数量微调 */
+.playlist-sidebar-item .sidebar-item-count {
+    margin-right: 3px;
+    font-size: 11.5px;
+}
+
+/* 歌单名称无缝从右到左匀速跑马灯：仅在鼠标悬浮且溢出时触发，移出立即停止并复位 */
+.playlist-sidebar-item .playlist-name-track {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    width: 100%;
+}
+
+.playlist-sidebar-item.is-marquee-active .playlist-name-wrapper {
+    mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+}
+
+.playlist-sidebar-item.is-marquee-active .playlist-name-track {
+    display: inline-flex !important;
+    width: max-content !important;
+    animation: sidebar-name-marquee var(--sidebar-marquee-duration, 8s) linear infinite;
+    animation-delay: 0.35s;
+    will-change: transform;
+}
+
+.playlist-sidebar-item.is-marquee-active .playlist-name-text {
+    display: inline-block !important;
+    width: max-content !important;
+    max-width: none !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    white-space: nowrap !important;
+    padding-right: 2rem !important;
+    flex-shrink: 0;
+}
+
+.playlist-sidebar-item.is-marquee-active .playlist-name-copy {
+    display: inline-block !important;
+    width: max-content !important;
+    white-space: nowrap !important;
+    padding-right: 2rem !important;
+    flex-shrink: 0;
+}
+
+@keyframes sidebar-name-marquee {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+/* 侧边栏操作按钮组：仅悬浮或选中时展示，紧凑精致 */
+.playlist-sidebar-item .sidebar-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.5px;
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: max-width 0.15s ease, opacity 0.12s ease;
+}
+
+.playlist-sidebar-item:hover .sidebar-item-actions,
+.playlist-sidebar-item.active-sub-item .sidebar-item-actions {
+    max-width: 200px;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.playlist-sidebar-item .action-btn {
+    width: 19px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    color: #9ca3af;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.playlist-sidebar-item .action-btn i {
+    font-size: 10px;
+}
+
+.playlist-sidebar-item .action-btn:hover {
+    background-color: color-mix(in srgb, var(--c-500) 18%, transparent);
+    color: var(--c-500) !important;
+    transform: scale(1.15);
+}
+
+.playlist-sidebar-item .action-btn:active {
+    transform: scale(0.95);
+}
+
+.playlist-sidebar-item .action-btn.delete-btn:hover {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #ef4444 !important;
+}
+.playlist-sidebar-item .action-btn.delete-btn:hover i {
+    color: #ef4444 !important;
+}
+
+.active-sub-item i {
+    color: var(--c-600) !important;
+}
+
+.active-sub-item .sidebar-item-actions .action-btn i {
+    color: #9ca3af !important;
+}
+
+.active-sub-item .sidebar-item-actions .action-btn:hover i {
+    color: var(--c-500) !important;
+}
+
+.active-sub-item .sidebar-item-actions .action-btn.delete-btn:hover i {
+    color: #ef4444 !important;
+}
+
+/* ==========================================================================
+   移动端专属紧凑布局：图标更靠近、间距缩小，充分留出歌单名称空间
+   ========================================================================== */
+@media (max-width: 767px) {
+    .playlist-sidebar-item {
+        margin: 2px !important;
+        padding: 5px 6px !important;
+    }
+
+    /* 左侧手柄与图标更靠近 */
+    .playlist-sidebar-item .favorite-sidebar-drag-handle {
+        margin-right: 3px !important;
+    }
+
+    .playlist-sidebar-item .favorite-sidebar-drag-handle i {
+        font-size: 10px !important;
+    }
+
+    .playlist-sidebar-item .sidebar-item-icon {
+        width: 1rem !important;
+    }
+
+    .playlist-sidebar-item > div.overflow-hidden {
+        margin-left: 4px !important;
+    }
+
+    /* 右侧歌曲计数紧凑靠拢 */
+    .playlist-sidebar-item .sidebar-item-count {
+        margin-right: 2px !important;
+        font-size: 10.5px !important;
+    }
+
+    /* 右侧操作按钮间距极大缩小、彼此紧密靠近 */
+    .playlist-sidebar-item .sidebar-item-actions {
+        gap: 1px !important;
+        max-width: 0;
+        opacity: 0;
+    }
+
+    .playlist-sidebar-item:hover .sidebar-item-actions,
+    .playlist-sidebar-item.active-sub-item .sidebar-item-actions {
+        max-width: 150px !important;
+        opacity: 1 !important;
+    }
+
+    .playlist-sidebar-item .action-btn {
+        width: 17px !important;
+        height: 20px !important;
+        padding: 0 !important;
+    }
+
+    .playlist-sidebar-item .action-btn i {
+        font-size: 9.5px !important;
+    }
+}
+
+/* Lyric View Styles */
+.mask-image-gradient {
+    mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+}
+
+.mask-image-linear-fade {
+    mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* 彻底消除侧边抽屉在隐藏状态下的阴影与边缘线残留 */
+#queue-drawer.translate-x-full,
+#cache-drawer.translate-x-full,
+#download-drawer.translate-x-full {
+    box-shadow: none !important;
+    border-left-width: 0 !important;
+}
+
+/* Setting Tooltip Styles */
+.setting-tooltip-trigger {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-left: 0.375rem;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: color 0.2s;
+    vertical-align: middle;
+}
+
+.setting-tooltip-trigger:hover {
+    color: var(--c-500);
+}
+
+.setting-tooltip-content {
+    /* [适配修复] 改为 fixed：由 js/common_ui.js 的 clampTooltipPosition 算出
+       left/top 并夹在视口内，任何位置（含屏幕左右边缘）都能完整显示。
+       原先用 absolute + left:50% 居中，靠边就会被裁掉半截。 */
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: min(20rem, calc(100vw - 2.5rem));
+    max-width: calc(100vw - 2.5rem);
+    /* 长英文/连续字符不再撑破气泡 */
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--c-100);
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    font-size: 0.75rem;
+    font-weight: normal;
+    line-height: 1.5;
+    color: #4b5563;
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    /* 超长说明在气泡内滚动，不再无限向上撑破视口 */
+    max-height: min(60vh, 22rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    /* 首次出现时不要从左上角闪一下，等 JS 定位好再淡入 */
+    transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.2s;
+}
+
+.dark .setting-tooltip-content {
+    background: rgba(31, 41, 55, 0.95);
+    border-color: rgba(75, 85, 99, 0.3);
+    color: #d1d5db;
+}
+
+/* Triangle notch —— 横向位置由 JS 写入 --aq-notch-x，跟随问号所在处 */
+.setting-tooltip-content::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: var(--aq-notch-x, 50%);
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: rgba(255, 255, 255, 0.95) transparent transparent;
+}
+
+.dark .setting-tooltip-content::after {
+    border-color: rgba(31, 41, 55, 0.95) transparent transparent;
+}
+
+/* Show on hover (Desktop) */
+@media (hover: hover) {
+    .setting-tooltip-trigger:hover .setting-tooltip-content {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+/* Active state for mobile click */
+.setting-tooltip-trigger.is-active .setting-tooltip-content {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.lyric-line {
+    font-family: var(--lyric-font-family, inherit);
+    font-size: var(--lyric-font-size, 1.25rem);
+    line-height: 1.4;
+    /* 基础行高由内部元素撑开 */
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    cursor: pointer;
+    opacity: 0.6;
+    transform-origin: left center;
+
+    /* Wrapping constraints */
+    width: fit-content;
+    max-width: 100%;
+    padding: 0.6em 2rem 0.6em 1.5rem;
+    /* 使用 em，随字号缩放行间距 */
+    box-sizing: border-box;
+    white-space: normal;
+    overflow-wrap: break-word;
+}
+
+/* Centered origin for mobile */
+@media (max-width: 1024px) {
+    .lyric-line {
+        transform-origin: center center;
+        margin: 0 auto;
+    }
+}
+
+/* Force center origin/alignment when cover is hidden (desktop) */
+.lyrics-centered .lyric-line {
+    transform-origin: center center !important;
+    margin: 0 auto;
+    text-align: center !important;
+}
+
+.lyrics-centered .lyric-line span {
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+.lyric-line:hover {
+    opacity: 0.8;
+}
+
+.lyric-line.active {
+    opacity: 1;
+    font-weight: 800;
+    color: var(--c-500);
+    z-index: 10;
+    /* 确保高亮行在最上层，阴影不被覆盖 */
+    overflow: visible;
+    /* 允许阴影和放大后的文字溢出显示 */
+    /* transform: scale(1.15); REMOVED */
+    font-size: calc(var(--lyric-font-size, 1.25rem) * 1.3);
+}
+
+/* 当歌词居中展示时，移除封面留下的间距占位 */
+#player-detail-container.has-centered-lyrics {
+    gap: 0 !important;
+}
+
+/* Karaoke Word Styles */
+.lyric-line .word-item {
+    position: relative;
+    display: inline-block;
+    transition: filter 0.2s ease-out;
+    white-space: pre-wrap;
+    pointer-events: none;
+}
+
+.lyric-line.active .word-item {
+    /* 播放过的部分(左侧)是主题色，未播放(右侧)为浅灰色 
+       实现平滑的扫过效果 */
+    background: linear-gradient(to right,
+            var(--c-500) var(--word-progress, 0%),
+            #999 var(--word-progress, 0%));
+    background-clip: text;
+    -webkit-background-clip: text;
+    /* 必须保持透明，才能显示底层的背景渐变！ */
+    -webkit-text-fill-color: transparent;
+}
+
+/* 正在扫过（演唱中）及已唱过去的字，显示主题荧光 */
+.enable-lyric-glow .lyric-line.active .word-item.playing,
+.enable-lyric-glow .lyric-line.active .word-item.passed {
+    filter: drop-shadow(0 4px 12px var(--c-200));
+}
+
+
+/* 对于不支持逐字的普通歌词及其翻译，直接点亮 (没有平滑动效) */
+.lyric-line.active .plain-lyric {
+    color: var(--c-500);
+}
+
+.lyric-line.active .extended {
+    opacity: 0.8;
+    font-weight: 500;
+    color: var(--c-500);
+}
+
+/* 对于支持逐字的歌词的翻译/罗马音，现在改为逐字点亮 */
+.lyric-line.has-words.active .extended {
+    color: #9CA3AF;
+    /* gray-400 */
+    background: none;
+    -webkit-text-fill-color: initial;
+    background-clip: initial;
+}
+
+.lyric-line.has-words.active .extended .ext-item {
+    display: inline-block;
+    background: linear-gradient(to right,
+            var(--c-500) var(--word-progress, 0%),
+            #9CA3AF var(--word-progress, 0%));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transition: none;
+    /* 由 JS 循环控制平滑度 */
+    white-space: pre;
+}
+
+/* 仅对正在点亮或已点亮的翻译字符应用荧光效果，保持 0 2px 8px 的朦胧参数 */
+.enable-lyric-glow .lyric-line.active .extended .ext-item.playing,
+.enable-lyric-glow .lyric-line.active .extended .ext-item.passed {
+    filter: drop-shadow(0 2px 8px var(--c-200));
+}
+
+/* 普通歌词(非逐字)或没有切分的歌词依然维持整体荧光 */
+.enable-lyric-glow .lyric-line.active .plain-lyric {
+    filter: drop-shadow(0 2px 8px var(--c-200));
+}
+
+/* Scroll target - 用户滚动时对准的歌词 */
+.lyric-line.scroll-target {
+    color: #f97316;
+    /* orange-500 */
+    opacity: 1;
+    /* transform: scale(1.1); REMOVED */
+    font-size: calc(var(--lyric-font-size, 1.25rem) * 1.15);
+    font-weight: 700;
+}
+
+.enable-lyric-glow .lyric-line.scroll-target {
+    text-shadow: 0 2px 10px rgba(249, 115, 22, 0.2);
+}
+
+/* Mobile Sidebar Transition */
+#mobile-sidebar-backdrop {
+    transition: opacity 0.3s ease-in-out;
+}
+
+aside {
+    transition: transform 0.3s ease-in-out;
+}
+
+@keyframes marquee {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+.animate-marquee {
+    display: inline-block;
+    animation: marquee 10s linear infinite;
+}
+
+/* Default: Always Run (for Touch/Mobile) */
+.hover-scroll-paused {
+    animation-play-state: running;
+}
+
+/* Desktop: Pause by default, run on hover */
+@media (hover: hover) {
+    .hover-scroll-paused {
+        animation-play-state: paused;
+    }
+
+    .group:hover .hover-scroll-paused {
+        animation-play-state: running;
+    }
+}
+
+.force-visible {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* 菜单选中项样式 */
+.active-option {
+    background-color: var(--c-500) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 12px var(--c-200);
+}
+
+[data-appearance="dark"] .active-option {
+    background-color: var(--c-600) !important;
+    color: #fff !important;
+}
+
+.active-option i,
+.active-option span {
+    color: #fff !important;
+}
+
+/* Sleep Timer Styles */
+.timer-preset-btn {
+    padding: 0.75rem 1rem;
+    background-color: #f9fafb;
+    color: #4b5563;
+    font-weight: 700;
+    border-radius: 1rem;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+    font-size: 0.875rem;
+    text-align: center;
+}
+
+.timer-preset-btn:hover {
+    background-color: #ecfdf5;
+    color: #059669;
+    border-color: #d1fae5;
+    transform: translateY(-1px);
+}
+
+.timer-preset-btn:active {
+    transform: translateY(0);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.animate-slide-up {
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Lyric Font Size Variable */
+:root {
+    --lyric-font-size: 1.25rem;
+}
+
+.lyric-line .font-lrc {
+    font-size: 1.1em !important;
+    /* 基础字号略微放大 */
+    line-height: 1.4;
+    display: block;
+}
+
+.lyric-line .extended {
+    font-size: 0.75em !important;
+    line-height: 1.4;
+    margin-top: 0.4em;
+    /* 翻译与原文的间距：随字号缩放 */
+    display: block;
+    opacity: 0.8;
+}
+
+/* 隐藏滚动条但保留滚动能力 */
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari and Opera */
+}
+
+/* Expand Button Faint Style */
+#btn-expand-panel.faint,
+#btn-toggle-lyrics.faint {
+    opacity: 0.15 !important;
+    background-color: rgba(255, 255, 255, 0.4) !important;
+    border-color: rgba(200, 200, 200, 0.2) !important;
+}
+
+#btn-expand-panel.faint:hover,
+#btn-toggle-lyrics.faint:hover {
+    opacity: 1 !important;
+    background-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(16, 185, 129, 0.3);
+}
+
+/* Detail Title multi-line support */
+#detail-title {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    white-space: normal !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.25;
+}
+
+#detail-title-container {
+    white-space: normal !important;
+}
+
+/* Lyric Card Share - Button States */
+.lc-layout-btn,
+.lc-color-btn,
+.lc-lines-btn {
+    color: #6b7280;
+    border-color: #e5e7eb;
+    background: #f9fafb;
+}
+
+.lc-layout-btn:hover,
+.lc-color-btn:hover,
+.lc-lines-btn:hover {
+    border-color: var(--c-300);
+    color: var(--c-600);
+    background: var(--c-50);
+}
+
+.lc-btn-active {
+    border-color: var(--c-500) !important;
+    color: var(--c-600) !important;
+    background: var(--c-50) !important;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-500) 15%, transparent);
+}
+
+/* Lyric Card - 主题色滑动条 */
+.lc-range-input {
+    accent-color: var(--c-500);
+}
+
+/* Sortable Styles (Direct Move Mode) */
+.sortable-ghost-solid {
+    opacity: 1 !important;
+    border: 2px solid var(--c-500) !important;
+    background: var(--c-50) !important;
+    box-shadow: inset 0 0 0 2px var(--c-100) !important;
+}
+
+.sortable-chosen-item {
+    opacity: 1 !important;
+    position: relative;
+    z-index: 10;
+}
+
+.sortable-drag-item {
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+.select-none {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+}
+
+/* Silky Animation for Player Detail */
+#view-player-detail {
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease-out !important;
+    will-change: transform, opacity;
+}
+
+#view-player-detail.translate-y-\[100\%\] #player-detail-container {
+    transform: scale(0.92) translateY(40px);
+    opacity: 0;
+}
+
+#player-detail-container {
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease-out;
+    will-change: transform, opacity;
+}
+
+#player-footer {
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    will-change: transform;
+}
+
+/* Buffering status dots animation */
+@keyframes loading-bounce {
+
+    0%,
+    80%,
+    100% {
+        transform: translateY(0);
+        opacity: 0.5;
+    }
+
+    40% {
+        transform: translateY(-4px);
+        opacity: 1;
+    }
+}
+
+.animate-loading-dots span {
+    display: inline-block;
+    animation: loading-bounce 1.4s infinite ease-in-out;
+}
+
+.animate-loading-dots span:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.animate-loading-dots span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.animate-loading-dots span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+/* Music Visualizer Loader */
+@keyframes music-bar-animate {
+
+    0%,
+    100% {
+        transform: scaleY(0.3);
+        opacity: 0.3;
+    }
+
+    50% {
+        transform: scaleY(1.2);
+        opacity: 1;
+    }
+}
+
+.music-visualizer-loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    height: 60px;
+}
+
+.music-visualizer-loader div {
+    width: 5px;
+    height: 40px;
+    background: var(--c-500);
+    border-radius: 3px;
+    box-shadow: 0 0 15px color-mix(in srgb, var(--c-500) 40%, transparent);
+    animation: music-bar-animate 1.2s infinite ease-in-out;
+}
+
+.music-visualizer-loader div:nth-child(1) {
+    animation-delay: 0.0s;
+}
+
+.music-visualizer-loader div:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.music-visualizer-loader div:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+.music-visualizer-loader div:nth-child(4) {
+    animation-delay: 0.3s;
+}
+
+.music-visualizer-loader div:nth-child(5) {
+    animation-delay: 0.4s;
+}
+
+.music-visualizer-loader div:nth-child(6) {
+    animation-delay: 0.3s;
+}
+
+.music-visualizer-loader div:nth-child(7) {
+    animation-delay: 0.2s;
+}
+
+.music-visualizer-loader div:nth-child(8) {
+    animation-delay: 0.1s;
+}
+
+.music-visualizer-loader div:nth-child(9) {
+    animation-delay: 0.0s;
+}
+
+/* Search Match Highlights - Consistently use theme color-mix */
+.search-match {
+    background-color: color-mix(in srgb, var(--c-500) 10%, transparent) !important;
+    border-radius: 0.75rem;
+}
+
+.search-current {
+    background-color: color-mix(in srgb, var(--c-500) 25%, transparent) !important;
+    box-shadow: inset 0 0 0 2px var(--c-500) !important;
+    border-radius: 0.75rem;
+}
+
+.row-selected {
+    background-color: color-mix(in srgb, var(--c-500) 15%, transparent) !important;
+    border-radius: 0.75rem;
+}
+
+/* Dark mode refinements: Use deeper theme mix instead of plain white */
+:root[data-appearance="dark"] .search-match {
+    background-color: color-mix(in srgb, var(--c-500) 12%, transparent) !important;
+}
+
+:root[data-appearance="dark"] .search-current {
+    background-color: color-mix(in srgb, var(--c-500) 30%, transparent) !important;
+    box-shadow: inset 0 0 0 2px var(--c-500), 0 0 15px color-mix(in srgb, var(--c-500) 30%, transparent) !important;
+}
+
+:root[data-appearance="dark"] .row-selected {
+    background-color: color-mix(in srgb, var(--c-500) 18%, transparent) !important;
+}
+
+/* 响应式侧边栏优化：针对垂直高度不足的情况 */
+@media (max-height: 845px) {
+
+    /* 压缩导航栏间距 */
+    #main-sidebar nav ul li a,
+    #main-sidebar nav ul li div[onclick] {
+        padding-top: 0.4rem !important;
+        padding-bottom: 0.4rem !important;
+    }
+
+    /* 迷你播放器改为横向布局 */
+    #sidebar-song-info:not(.hidden) {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 0.75rem !important;
+        padding: 0.75rem 1rem !important;
+        text-align: left !important;
+    }
+
+    #sidebar-cover {
+        width: 3.25rem !important;
+        height: 3.25rem !important;
+        margin-bottom: 0 !important;
+        border-radius: 0.5rem !important;
+    }
+
+    #sidebar-song-info>div.text-center {
+        text-align: left !important;
+        align-items: flex-start !important;
+        flex: 1;
+        min-width: 0;
+    }
+
+    #sidebar-song-name {
+        font-size: 0.8rem !important;
+        line-height: 1.25;
+    }
+
+    #sidebar-singer {
+        font-size: 0.7rem !important;
+        line-height: 1.2;
+    }
+
+    /* 压缩底部版权信息 */
+    .sidebar-copyright-text {
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+    }
+}
+
+/* ── 通用控件基础样式 (Filter Tag, Select, Custom Trigger) ── */
+.lm-filter-tag, .lm-select, .cs-trigger {
+    font-size: 11px;
+    font-weight: 600;
+    border: 1.5px solid var(--border-main);
+    background-color: var(--bg-panel);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.lm-filter-tag:hover, .lm-select:hover, .cs-trigger:hover {
+    border-color: var(--c-400);
+    color: var(--c-500);
+}
+
+.lm-filter-tag.active, .lm-select.active, .cs-wrapper.highlight .cs-trigger {
+    background-color: var(--c-500);
+    border-color: var(--c-500);
+    color: #fff;
+}
+
+.lm-select:focus, .cs-wrapper.active .cs-trigger {
+    border-color: var(--c-500);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--c-500) 20%, transparent);
+    color: var(--text-main);
+}
+
+/* ── 多选筛选标签组特有样式 ── */
+.lm-filter-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    min-height: 30px;
+    align-items: center;
+}
+
+.lm-filter-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    line-height: 1.6;
+}
+
+.lm-filter-tag:hover {
+    background-color: color-mix(in srgb, var(--c-500) 8%, var(--bg-panel));
+}
+
+.lm-filter-tag.active {
+    box-shadow: 0 1px 4px color-mix(in srgb, var(--c-500) 40%, transparent);
+}
+
+.lm-filter-tag.active:hover {
+    background-color: var(--c-600);
+    border-color: var(--c-600);
+}
+
+/* ── 统一风格的单选 select 特有样式 ── */
+.lm-select {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    padding: 3px 24px 3px 8px;
+    border-radius: 6px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7280'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 7px center;
+    outline: none;
+    line-height: 1.6;
+    min-height: 26px;
+}
+
+.lm-select.active {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23ffffff'/%3E%3C/svg%3E");
+}
+
+/* ── 自定义下拉组件基础样式 ── */
+.cs-wrapper {
+    display: inline-block;
+    vertical-align: middle;
+    user-select: none;
+    cursor: pointer;
+}
+/* 继承布局 */
+.cs-wrapper.flex-1 { flex: 1; }
+.cs-wrapper.flex-none { flex: none; }
+.cs-wrapper.shrink-0 { flex-shrink: 0; }
+
+.cs-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 4px 10px;
+    border-radius: 10px;
+    min-height: 28px;
+    box-sizing: border-box;
+}
+
+.cs-trigger-text {
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+}
+
+.cs-trigger-icon {
+    font-size: 8px;
+    transition: transform 0.2s ease;
+    margin-left: 8px;
+}
+.cs-wrapper.active .cs-trigger-icon { transform: rotate(180deg); }
+.cs-wrapper.highlight .cs-trigger-icon { color: #fff; }
+
+/* Portal 模式下的下拉框 */
+.cs-dropdown {
+    position: absolute;
+    z-index: 9999; /* 必须足够高以穿透所有容器 */
+    background: var(--bg-panel);
+    border: 1.5px solid var(--border-main);
+    border-radius: 12px;
+    box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.2), 0 10px 15px -10px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+    pointer-events: none;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.15);
+    overflow: hidden;
+    max-height: 280px;
+    overflow-y: auto;
+    min-width: 120px;
+}
+.cs-dropdown.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+/* 向上弹出的动画调整 */
+.cs-dropdown.open-up {
+    transform: translateY(-10px) scale(0.95);
+}
+.cs-dropdown.open-up.visible {
+    transform: translateY(0) scale(1);
+}
+
+.cs-options { padding: 5px; list-style: none; margin: 0; }
+.cs-option {
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: 8px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.cs-option:hover {
+    background: color-mix(in srgb, var(--c-500) 10%, var(--bg-panel));
+    color: var(--c-600);
+    padding-left: 14px;
+}
+.cs-option.selected {
+    background: var(--c-500);
+    color: #fff !important;
+    font-weight: 700;
+}
+.cs-option i { font-size: 9px; opacity: 0; }
+.cs-option.selected i { opacity: 1; }
+
+/* 暗色模式微调 */
+.dark .cs-dropdown {
+    background: rgba(31, 41, 55, 0.9);
+    box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.4);
+}
+
+/* 子目录选择按钮适配 */
+.subpath-btn-active {
+    border-color: var(--c-500) !important;
+    background-color: var(--c-50) !important;
+}
+:root[data-appearance="dark"] .subpath-btn-active,
+.dark .subpath-btn-active {
+    background-color: color-mix(in srgb, var(--c-500) 15%, transparent) !important;
+}
+.subpath-btn-active i,
+.subpath-btn-active span {
+    color: var(--c-600) !important;
+}
+:root[data-appearance="dark"] .subpath-btn-active i,
+:root[data-appearance="dark"] .subpath-btn-active span,
+.dark .subpath-btn-active i,
+.dark .subpath-btn-active span {
+    color: var(--c-300) !important;
+}
+
+.subpath-btn-inactive {
+    border-color: var(--border-main) !important;
+    background-color: transparent !important;
+}
+.subpath-btn-inactive:hover {
+    border-color: var(--c-500) !important;
+    background-color: color-mix(in srgb, var(--c-500) 8%, var(--bg-panel)) !important;
+}
+.subpath-btn-inactive i {
+    color: var(--text-muted) !important;
+}
+.subpath-btn-inactive span {
+    color: var(--text-main) !important;
+}
+.subpath-btn-inactive:hover i,
+.subpath-btn-inactive:hover span {
+    color: var(--c-500) !important;
+}
+
+/* ── 搜索框布尔运算符标签 (方框浅色字符) ── */
+.lm-op-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    margin: 0 2px;
+    border-radius: 4px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-weight: 700;
+    font-size: 11px;
+    line-height: 1.4;
+    user-select: none;
+    background-color: color-mix(in srgb, var(--c-500) 12%, var(--bg-panel));
+    color: var(--c-600);
+    border: 1px solid color-mix(in srgb, var(--c-500) 40%, transparent);
+    vertical-align: middle;
+}
+:root[data-appearance="dark"] .lm-op-tag,
+.dark .lm-op-tag {
+    background-color: color-mix(in srgb, var(--c-500) 22%, transparent);
+    color: var(--c-300);
+    border-color: color-mix(in srgb, var(--c-500) 50%, transparent);
+}
+
+.lm-rich-search-input:empty::before {
+    content: attr(data-placeholder);
+    color: var(--text-muted);
+    opacity: 0.65;
+    pointer-events: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+}
+
+/* ── 搜索框语法错误红框高亮 ── */
+.lm-search-input-error {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.35) !important;
+}
+:root[data-appearance="dark"] .lm-search-input-error,
+.dark .lm-search-input-error {
+    border-color: #f87171 !important;
+    box-shadow: 0 0 0 2px rgba(248, 113, 113, 0.4) !important;
+}
+
+
+
+
+/* ===== v33 Apple 沉浸封面 & 毛玻璃 ===== */
+/* 播放页沉浸背景：深色渐变 + 强毛玻璃（浅色主题自动适配） */
+/* Apple 沉浸封面：四段深浅渐变，顶部/底部压深保证歌词与控件可读，中间透出封面色彩氛围 */
+#player-detail-bg-overlay {
+    background: linear-gradient(to bottom,
+        rgba(8,10,20,0.68) 0%,
+        rgba(8,10,20,0.20) 26%,
+        rgba(8,10,20,0.32) 52%,
+        rgba(8,10,20,0.74) 100%);
+    backdrop-filter: blur(48px) saturate(150%);
+    -webkit-backdrop-filter: blur(48px) saturate(150%);
+}
+html:not([data-appearance="dark"]) #player-detail-bg-overlay {
+    background: linear-gradient(to bottom,
+        rgba(255,255,255,0.74) 0%,
+        rgba(255,255,255,0.34) 26%,
+        rgba(255,255,255,0.44) 52%,
+        rgba(255,255,255,0.80) 100%);
+}
+/* 沉浸封面：顶部导航栏区域再压一层，保证返回/标题可见 */
+#view-player-detail .player-detail-top-shade {
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 96px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.28), transparent);
+    pointer-events: none;
+}
+html:not([data-appearance="dark"]) #view-player-detail .player-detail-top-shade {
+    background: linear-gradient(to bottom, rgba(255,255,255,0.32), transparent);
+}
+/* 播放队列抽屉：Apple 毛玻璃卡片 */
+#queue-drawer {
+    background: rgba(248,249,252,0.88) !important;
+    backdrop-filter: blur(40px) saturate(170%);
+    -webkit-backdrop-filter: blur(40px) saturate(170%);
+    border-left: 1px solid rgba(255,255,255,0.6);
+    box-shadow: -24px 0 60px rgba(0,0,0,0.2);
+}
+html[data-appearance="dark"] #queue-drawer {
+    background: rgba(24,24,26,0.88) !important;
+    border-left: 1px solid rgba(255,255,255,0.14);
+    box-shadow: -24px 0 60px rgba(0,0,0,0.5);
+}
+#queue-drawer .queue-item-card {
+    background: rgba(255,255,255,0.78);
+    border: 1px solid rgba(255,255,255,0.75);
+    box-shadow: 0 2px 14px rgba(0,0,0,0.08);
+}
+#queue-drawer .queue-item-card:hover {
+    background: rgba(255,255,255,0.92);
+}
+html[data-appearance="dark"] #queue-drawer .queue-item-card {
+    background: rgba(58,58,60,0.6);
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 2px 14px rgba(0,0,0,0.3);
+}
+html[data-appearance="dark"] #queue-drawer .queue-item-card:hover {
+    background: rgba(74,74,76,0.7);
+}
+/* 倍速菜单毛玻璃 */
+#playback-rate-menu {
+    background: rgba(250,250,252,0.85) !important;
+    backdrop-filter: blur(26px) saturate(160%);
+    -webkit-backdrop-filter: blur(26px) saturate(160%);
+    border: 1px solid rgba(255,255,255,0.6);
+    box-shadow: 0 12px 44px rgba(0,0,0,0.16);
+}
+html[data-appearance="dark"] #playback-rate-menu {
+    background: rgba(40,40,42,0.85) !important;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 12px 44px rgba(0,0,0,0.5);
+}
+
+
+/* ===== v34 倍速弹层 & 通用弹层 Apple 毛玻璃 ===== */
+#aqQPop {
+    background: rgba(250,250,252,0.82) !important;
+    backdrop-filter: blur(30px) saturate(160%);
+    -webkit-backdrop-filter: blur(30px) saturate(160%);
+    border: 1px solid rgba(255,255,255,0.6);
+    box-shadow: 0 18px 60px rgba(0,0,0,0.18);
+    border-radius: 20px;
+}
+html[data-appearance="dark"] #aqQPop {
+    background: rgba(38,38,40,0.82) !important;
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 18px 60px rgba(0,0,0,0.55);
+}
+#aqQPopMask {
+    background: rgba(0,0,0,0.25) !important;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+#aqQPop .aq-qpop-item {
+    border-radius: 12px;
+    margin: 2px 10px;
+}
+#aqQPop .aq-qpop-item.on {
+    background: rgba(255,45,85,0.12) !important;
+    color: #ff2d55 !important;
+    font-weight: 700;
+}
+html[data-appearance="dark"] #aqQPop .aq-qpop-item.on {
+    background: rgba(255,45,85,0.22) !important;
+    color: #ff5c7a !important;
+}
+#aqQPop .aq-qpop-item:hover {
+    background: rgba(120,120,128,0.14) !important;
+}
+#aqQPopTitle {
+    padding: 16px 18px 8px !important;
+}
+
+
+/* ===== v37 沉浸封面：浅色减淡 + 封面光晕 ===== */
+/* v39 沉浸封面 scrim：中段轻透出封面色彩，顶部/底部压深保证文字可读（BitChord 式） */
+#player-detail-bg-overlay {
+    background: linear-gradient(to bottom,
+        rgba(10,12,24,0.42) 0%,
+        rgba(10,12,24,0.12) 30%,
+        rgba(10,12,24,0.20) 55%,
+        rgba(10,12,24,0.55) 100%);
+}
+/* 中央封面 Apple 柔光光晕（深浅主题适配） */
+#mobile-player-cover-container {
+    box-shadow:
+        0 24px 80px rgba(0,0,0,0.32),
+        0 0 0 1px rgba(255,255,255,0.35),
+        0 0 70px 14px rgba(255,255,255,0.35);
+}
+html[data-appearance="dark"] #mobile-player-cover-container {
+    box-shadow:
+        0 24px 80px rgba(0,0,0,0.65),
+        0 0 0 1px rgba(255,255,255,0.10),
+        0 0 90px 22px rgba(130,130,255,0.10);
+}
+
+
+/* ===== v39 沉浸封面：播放页统一白字（Apple Music 全屏播放页风格） ===== */
+#view-player-detail #detail-title,
+#view-player-detail #detail-artist {
+    color: rgba(255,255,255,0.96) !important;
+    text-shadow: 0 1px 14px rgba(0,0,0,0.45);
+}
+#view-player-detail .aq-np-controls,
+#view-player-detail .aq-np-controls button,
+#view-player-detail .aq-np-progress span {
+    color: rgba(255,255,255,0.94) !important;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.35);
+}
+#view-player-detail #lyric-container .lyric-line {
+    color: rgba(255,255,255,0.86) !important;
+    text-shadow: 0 1px 10px rgba(0,0,0,0.4);
+}
+#view-player-detail #lyric-container .lyric-line.active {
+    color: #5eead4 !important;
+}
+#view-player-detail .btn-toggle-lyrics,
+#view-player-detail #btn-toggle-lyrics {
+    background: rgba(255,255,255,0.16) !important;
+    color: rgba(255,255,255,0.92) !important;
+    border: 1px solid rgba(255,255,255,0.25);
+}
+
+
+/* ===== v40 沉浸封面文字可读性：歌词 + 底部功能胶囊 ===== */
+/* v41 轻渐变（q-16a 式：对比主要靠背景 brightness 0.8 统一压暗） */
+#player-detail-bg-overlay {
+    background: linear-gradient(to bottom,
+        rgba(8,10,20,0.28) 0%,
+        rgba(8,10,20,0.44) 30%,
+        rgba(8,10,20,0.52) 55%,
+        rgba(8,10,20,0.70) 100%);
+}
+/* ===== v41 沉浸文字体系（q-16a 学习）：透明图标 + 白字，对比靠暗背景 ===== */
+/* 歌词分层（酷狗式）：普通行淡、当前行纯白加粗 */
+#view-player-detail #lyric-container .lyric-line {
+    color: rgba(255,255,255,0.45) !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.02em;
+    text-shadow: none !important;
+    transition: color 0.4s ease;
+}
+#view-player-detail #lyric-container .lyric-line.near {
+    color: rgba(255,255,255,0.72) !important;
+}
+#view-player-detail #lyric-container .lyric-line.active {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    text-shadow: none !important;
+}
+#view-player-detail #lyric-container .lyric-line.active .lyric-tr {
+    color: #5eead4 !important;
+}
+/* 歌名/歌手层级（q-16a） */
+#view-player-detail #detail-title {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    text-shadow: 0 1px 12px rgba(0,0,0,0.25) !important;
+}
+#view-player-detail #detail-artist {
+    color: rgba(235,235,245,0.55) !important;
+    text-shadow: none !important;
+}
+/* 底部控件区（酷狗式）：无胶囊，直接铺在暗渐变背景上 */
+#view-player-detail .aq-np-controls {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+#view-player-detail .aq-np-controls button {
+    background: transparent !important;
+    color: rgba(255,255,255,0.97) !important;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.25) !important;
+    border: none !important;
+    box-shadow: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+}
+#view-player-detail .aq-np-controls button:hover {
+    color: #ffffff !important;
+}
+#view-player-detail .aq-np-controls button.on,
+#view-player-detail .aq-np-controls button:active {
+    color: #ffffff !important;
+}
+/* 进度条时间：靠暗底可读 */
+#view-player-detail .aq-np-progress span {
+    color: rgba(255,255,255,0.92) !important;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.25) !important;
+}
+#view-player-detail .aq-np-controls button span,
+#view-player-detail .aq-np-controls button i {
+    color: inherit !important;
+}
+@media (hover: hover) and (pointer: fine) {
+    #view-player-detail .aq-np-controls button:hover {
+        color: #ffffff !important;
+    }
+}
+/* 顶部返回按钮（q-16a fp-close） */
+#view-player-detail .btn-toggle-lyrics,
+#view-player-detail #btn-toggle-lyrics {
+    background: rgba(255,255,255,0.12) !important;
+    color: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+/* 播放控制条（列表/上一曲/播放/下一曲/歌单）与进度时间 */
+#view-player-detail .aq-np-controls,
+#view-player-detail .aq-np-progress span {
+    color: rgba(235,235,245,0.75) !important;
+}
+
+
+/* ===== v46 酷狗式底部控件细节：小图标小字、均匀分布 ===== */
+#view-player-detail .aq-np-controls {
+    gap: 0.25rem;
+    padding: 0.4rem 0.5rem;
+}
+/* 功能按钮：小图标 + 小字，竖排 */
+#view-player-detail .aq-np-controls button {
+    font-size: 0.66rem !important;
+    line-height: 1.1 !important;
+    gap: 0.18rem !important;
+    padding: 0.22rem 0.35rem !important;
+    border-radius: 14px !important;
+    min-width: 0 !important;
+}
+#view-player-detail .aq-np-controls button i,
+#view-player-detail .aq-np-controls button svg {
+    font-size: 0.95rem !important;
+}
+#view-player-detail .aq-np-controls button span {
+    font-size: 0.62rem !important;
+    opacity: 0.92;
+}
+/* 播放控制（列表/上曲/播放/下曲/歌单）：加大间距 */
+#view-player-detail .aq-np-controls button#aqNpMode,
+#view-player-detail .aq-np-controls button#aqNpPrev,
+#view-player-detail .aq-np-controls button#aqNpPlay,
+#view-player-detail .aq-np-controls button#aqNpNext,
+#view-player-detail .aq-np-controls button#aqNpQueue {
+    padding: 0.45rem 1.05rem !important;
+    font-size: 1.25rem !important;
+    color: rgba(255,255,255,0.97) !important;
+}
+#view-player-detail .aq-np-controls button#aqNpMode i,
+#view-player-detail .aq-np-controls button#aqNpMode svg,
+#view-player-detail .aq-np-controls button#aqNpPrev i,
+#view-player-detail .aq-np-controls button#aqNpPrev svg,
+#view-player-detail .aq-np-controls button#aqNpNext i,
+#view-player-detail .aq-np-controls button#aqNpNext svg,
+#view-player-detail .aq-np-controls button#aqNpQueue i,
+#view-player-detail .aq-np-controls button#aqNpQueue svg {
+    font-size: 1.35rem !important;
+}
+#view-player-detail .aq-np-controls button#aqNpPlay i,
+#view-player-detail .aq-np-controls button#aqNpPlay svg {
+    font-size: 2.6rem !important;
+}
+/* 歌词字体略放大 */
+#view-player-detail #lyric-container .lyric-line {
+    font-size: 21px !important;
+}
+#view-player-detail #lyric-container .lyric-line.active {
+    font-size: 23px !important;
+}
+
+
+/* ===== v50 播放模式切换淡入提示 ===== */
+#aqModeFlash {
+    position: fixed;
+    left: 50%;
+    bottom: 24%;
+    transform: translateX(-50%);
+    background: rgba(18, 20, 30, 0.72);
+    -webkit-backdrop-filter: blur(22px) saturate(160%);
+    backdrop-filter: blur(22px) saturate(160%);
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    padding: 9px 24px;
+    border-radius: 999px;
+    border: 0.5px solid rgba(255, 255, 255, 0.16);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 9999;
+    transition: opacity 0.25s ease;
+}
+#aqModeFlash.show {
+    opacity: 1;
+}
+
+
+
+
+/* ===== v53 播放模式按钮 SVG 图标尺寸 ===== */
+#view-player-detail .aq-np-controls button#aqNpMode svg {
+    width: 1.35rem;
+    height: 1.35rem;
+}
+/* ===== [修改] 播放模式按钮图标与播放列表按钮图标统一放大、左右对称 ===== */
+/* 模式与播放列表按钮：固定完全一致的尺寸，内容居中（消除两端渲染差异） */
+#view-player-detail .aq-np-controls button#aqNpMode,
+#view-player-detail .aq-np-controls button#aqNpQueue {
+    width: 3.6rem !important;
+    height: 2.75rem !important;
+    padding: 0 !important;
+    display: grid !important;
+    place-items: center !important;
+}
+#view-player-detail .aq-np-controls button#aqNpMode svg,
+#view-player-detail .aq-np-controls button#aqNpQueue svg {
+    width: 24px !important;
+    height: 24px !important;
+}
+
+/* ===== v57 底部控件区完全透明：三行控件直接铺在播放页背景上（无包围） ===== */
+#view-player-detail .aq-np-controls {
+    background: transparent !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 0.4rem 0.5rem !important;
+}
+
+
+/* ===== v59 功能行（喜欢那行）毛玻璃条：透出封面色（黑色叠加=同色暗一点），非固定深灰阴影 ===== */
+#view-player-detail .aq-np-secondary {
+    background: rgba(0, 0, 0, 0.22) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+    backdrop-filter: blur(20px) saturate(160%) !important;
+    border: none !important;
+    border-radius: 16px !important;
+    box-shadow: none !important;
+    padding: 0.32rem 0.4rem !important;
+}
+/* [修改] 功能行按钮删减后：保持紧凑宽度、均匀分布，间距美观 */
+#view-player-detail .aq-np-secondary {
+    justify-content: space-evenly !important;
+}
+#view-player-detail .aq-np-secondary button {
+    flex: 0 1 auto !important;
+}
+/* 封面偏亮时：条透出亮色，图标变深保证可读（暗封面保持白图标） */
+#view-player-detail .aq-np-secondary.invert button {
+    color: #1b1b1d !important;
+    text-shadow: none !important;
+}
+/* [修改] 去掉工具行按钮悬停背景（用户不需要悬停胶囊效果） */
+
+
+/* ===== [修改] 播放页控件布局协调：进度行与功能胶囊统一左右边距，行间距均衡 ===== */
+#view-player-detail .aq-np-progress {
+    padding: 0 18px !important;
+}
+#view-player-detail .aq-np-row {
+    margin-top: 0.4rem !important;
+}
+#view-player-detail .aq-np-secondary {
+    margin-top: 0.45rem !important;
+}
+
+/* ===== [修改] 播放页亮底自适应（纯色背景/亮封面）：时间与控件自动转深色 ===== */
+#view-player-detail.np-light .aq-np-progress span {
+    color: rgba(28, 28, 30, 0.82) !important;
+    text-shadow: none !important;
+}
+#view-player-detail.np-light .aq-np-controls button,
+#view-player-detail.np-light .aq-np-controls button#aqNpMode,
+#view-player-detail.np-light .aq-np-controls button#aqNpPrev,
+#view-player-detail.np-light .aq-np-controls button#aqNpPlay,
+#view-player-detail.np-light .aq-np-controls button#aqNpNext,
+#view-player-detail.np-light .aq-np-controls button#aqNpQueue {
+    color: rgba(28, 28, 30, 0.92) !important;
+    text-shadow: none !important;
+}
+#view-player-detail.np-light .aq-np-controls button:hover,
+#view-player-detail.np-light .aq-np-controls button.on,
+#view-player-detail.np-light .aq-np-controls button:active {
+    color: #000000 !important;
+    background: transparent !important;
+}
+#view-player-detail.np-light .aq-np-track::before {
+    background: rgba(28, 28, 30, 0.26) !important;
+}
+#view-player-detail.np-light .btn-toggle-lyrics,
+#view-player-detail.np-light #btn-toggle-lyrics {
+    background: rgba(28, 28, 30, 0.10) !important;
+    color: rgba(28, 28, 30, 0.88) !important;
+}
+
+/* ===== [修改] 模糊背景兜底：非亮底时底部深色渐变压暗，亮封面下时间/控件仍可读 ===== */
+#view-player-detail:not(.np-light) .aq-np-controls {
+    background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.35) 45%, rgba(0, 0, 0, 0.58) 100%) !important;
+}/* ===== [修改] 纯色浅底：功能条毛玻璃改浅色透亮，去掉深色阴影感，与背景协调 ===== */
+#view-player-detail.np-light .aq-np-secondary {
+    background: rgba(255, 255, 255, 0.55) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(160%) !important;
+    backdrop-filter: blur(18px) saturate(160%) !important;
+    border: 1px solid rgba(28, 28, 30, 0.12) !important;
+    box-shadow: none !important;
+}
+#view-player-detail.np-light .aq-np-secondary button {
+    color: rgba(28, 28, 30, 0.78) !important;
+    text-shadow: none !important;
+}
+#view-player-detail.np-light .aq-np-secondary.invert button {
+    color: rgba(28, 28, 30, 0.78) !important;
+    text-shadow: none !important;
+}
+
+
+/* =====================================================================
+ * v60+ AMLL 式沉浸封面：强调色随封面主色，背景/控件/歌词同源协调
+ * （app.js applyCoverAmbient 注入 --cover-accent / --cover-accent-rgb）
+ * ===================================================================== */
+#view-player-detail {
+    /* 兜底值（封面未加载 / 提取失败时保持原视觉） */
+    --cover-accent: #5eead4;
+    --cover-accent-rgb: 94, 234, 212;
+    /* 旧变量桥接 -> 进度条、喜欢按钮等自动跟随封面色 */
+    --np-accent: var(--cover-accent, #fa2d48);
+    --pink: var(--cover-accent, #fa2d48);
+    --pink-soft: rgba(var(--cover-accent-rgb), 0.12);
+}
+
+/* 歌词当前行 + 翻译行 -> accent（深背景亮色） */
+#view-player-detail #lyric-container .lyric-line.active {
+    color: var(--cover-accent, #ffffff) !important;
+}
+#view-player-detail #lyric-container .lyric-line.active .lyric-tr {
+    color: rgba(var(--cover-accent-rgb), 0.88) !important;
+}
+
+/* 滚动参考线 + 时间显示 -> accent */
+#lyric-scroll-indicator .border-emerald-500 {
+    border-color: rgba(var(--cover-accent-rgb), 0.72) !important;
+}
+#lyric-scroll-indicator .time-display {
+    color: var(--cover-accent, #5eead4) !important;
+}
+
+/* 进度条填充：accent 渐变 + 柔光 */
+#view-player-detail .aq-np-fill {
+    background: linear-gradient(90deg, rgba(var(--cover-accent-rgb), 0.82), var(--cover-accent)) !important;
+    box-shadow: 0 0 10px rgba(var(--cover-accent-rgb), 0.45) !important;
+}
+#view-player-detail .aq-np-fill::after {
+    background: var(--cover-accent) !important;
+    box-shadow: 0 0 8px rgba(var(--cover-accent-rgb), 0.65), 0 2px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* 播放按钮：accent 渐变实心圆（Apple Music 式）——图标严格居中于圆内 */
+/* [v61] 防变形：flex 行内禁止伸缩压缩 + min/max 双限 + aspect-ratio 锁定 1:1，
+   任何分辨率/字号/容器挤压下都保持正圆（原 skin.css 为 55x64 长方形 + 12px 圆角） */
+#view-player-detail .aq-np-controls button#aqNpPlay {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    flex: 0 0 auto !important;
+    min-width: 3.4rem !important;
+    max-width: 3.4rem !important;
+    min-height: 3.4rem !important;
+    max-height: 3.4rem !important;
+    aspect-ratio: 1 / 1 !important;
+    background: linear-gradient(135deg, rgba(var(--cover-accent-rgb), 1), rgba(var(--cover-accent-rgb), 0.78)) !important;
+    border-radius: 50% !important;
+    width: 3.4rem !important;
+    height: 3.4rem !important;
+    box-shadow: 0 8px 24px -6px rgba(var(--cover-accent-rgb), 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+    color: #fff !important;
+}
+#view-player-detail .aq-np-controls button#aqNpPlay i,
+#view-player-detail .aq-np-controls button#aqNpPlay svg {
+    display: block !important;
+    line-height: 1 !important;
+    font-size: 1.8rem !important;
+    color: #fff !important;
+    flex: none !important;
+}
+
+/* 其他控件 hover / on -> accent */
+#view-player-detail .aq-np-controls button:hover,
+#view-player-detail .aq-np-controls button.on {
+    color: var(--cover-accent, #ffffff) !important;
+}
+
+/* 次级毛玻璃条：加内高光，更精致 */
+#view-player-detail .aq-np-secondary {
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.10) !important;
+}
+/* 顶部返回按钮 hover */
+#view-player-detail #btn-toggle-lyrics:hover {
+    background: rgba(var(--cover-accent-rgb), 0.22) !important;
+    color: var(--cover-accent) !important;
+}
+
+/* ---------- 亮底（np-light）适配：accent 为深色版，保证浅背景可读 ---------- */
+#view-player-detail.np-light #lyric-container .lyric-line.active {
+    color: var(--cover-accent, #0d9488) !important;
+}
+#view-player-detail.np-light #lyric-container .lyric-line.active .lyric-tr {
+    color: rgba(var(--cover-accent-rgb), 0.85) !important;
+}
+#view-player-detail.np-light .aq-np-controls button:hover,
+#view-player-detail.np-light .aq-np-controls button.on {
+    color: var(--cover-accent) !important;
+}
+#view-player-detail.np-light .aq-np-controls button#aqNpPlay {
+    background: linear-gradient(135deg, rgba(var(--cover-accent-rgb), 0.95), rgba(var(--cover-accent-rgb), 0.72)) !important;
+    box-shadow: 0 8px 22px -6px rgba(var(--cover-accent-rgb), 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+    color: #fff !important;
+}
+#view-player-detail.np-light .aq-np-controls button#aqNpPlay i,
+#view-player-detail.np-light .aq-np-controls button#aqNpPlay svg {
+    color: #fff !important;
+}
+#view-player-detail.np-light .aq-np-secondary {
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+
+/* =====================================================================
+ * v63 毛玻璃功能胶囊优化：边缘清晰 + 封面色协调（AMLL 中性叠层 + 主题色思路）
+ * ===================================================================== */
+/* 暗底：半透明深底(足够托底) + 亮细边框 + accent 内描边 + 内高光/外投影 —— 任何封面色下边缘都清晰 */
+/* [v63.1] 圆润饱满：圆角 24px + 更强上下渐变 + 顶部高光/底部内影，胶囊立体感 */
+#view-player-detail:not(.np-light) .aq-np-secondary {
+    background: linear-gradient(180deg, rgba(28, 28, 40, 0.62), rgba(8, 8, 14, 0.50)) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(160%) !important;
+    backdrop-filter: blur(24px) saturate(160%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.22) !important;
+    border-radius: 24px !important;
+    box-shadow:
+        0 16px 38px rgba(0, 0, 0, 0.40),
+        inset 0 1.5px 0 rgba(255, 255, 255, 0.20),
+        inset 0 -10px 18px rgba(0, 0, 0, 0.22),
+        inset 0 0 0 1px rgba(var(--cover-accent-rgb), 0.14) !important;
+    color: rgba(255, 255, 255, 0.88) !important;
+    padding: 0.42rem 0.5rem !important;
+}
+/* 亮底：半透明白(更实) + 深细边框 + accent 内描边 */
+#view-player-detail.np-light .aq-np-secondary {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.58)) !important;
+    -webkit-backdrop-filter: blur(22px) saturate(160%) !important;
+    backdrop-filter: blur(22px) saturate(160%) !important;
+    border: 1px solid rgba(28, 28, 30, 0.20) !important;
+    border-radius: 24px !important;
+    box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.16),
+        inset 0 1.5px 0 rgba(255, 255, 255, 0.95),
+        inset 0 -8px 16px rgba(0, 0, 0, 0.05),
+        inset 0 0 0 1px rgba(var(--cover-accent-rgb), 0.10) !important;
+    color: rgba(28, 28, 30, 0.84) !important;
+    padding: 0.42rem 0.5rem !important;
+}
+/* 胶囊内按钮 hover/on 态：accent 微染底（暗底白字 / 亮底 accent 字） */
+#view-player-detail:not(.np-light) .aq-np-secondary button:hover,
+#view-player-detail:not(.np-light) .aq-np-secondary button.on,
+#view-player-detail:not(.np-light) .aq-np-secondary button:active {
+    background: rgba(var(--cover-accent-rgb), 0.18) !important;
+    color: #ffffff !important;
+}
+#view-player-detail.np-light .aq-np-secondary button:hover,
+#view-player-detail.np-light .aq-np-secondary button.on,
+#view-player-detail.np-light .aq-np-secondary button:active {
+    background: rgba(var(--cover-accent-rgb), 0.14) !important;
+    color: var(--cover-accent, #0d9488) !important;
+}
+
+
+/* =====================================================================
+ * v64 主页 Dock 动画丝滑 + 底部两胶囊毛玻璃增强（协调主题）
+ * ===================================================================== */
+/* --- v64a 收合/展开动画丝滑：tabbar 全程可见过渡，visibility 延迟生效 --- */
+#aq-tabbar {
+    height: var(--nav) !important;
+    transition:
+        opacity .55s cubic-bezier(.22, 1, .36, 1),
+        transform .6s cubic-bezier(.22, 1, .36, 1),
+        height .6s cubic-bezier(.22, 1, .36, 1),
+        max-height .6s cubic-bezier(.22, 1, .36, 1),
+        margin .5s cubic-bezier(.22, 1, .36, 1),
+        padding .5s cubic-bezier(.22, 1, .36, 1),
+        border-width .45s ease,
+        visibility 0s linear .55s !important;
+}
+/* 收合时 transform/opacity 交还原值（视觉动效统一为 Dock 的缓动曲线） */
+.aq-dock.collapsed #aq-tabbar {
+    opacity: 0 !important;
+    transform: scale(.88) translateY(18px) !important;
+    height: 0 !important;
+    max-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-width: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+/* mini 胶囊：加高度/圆角/阴影/背景过渡，收合展开不跳变 */
+#aqMini {
+    transition:
+        height .6s cubic-bezier(.22, 1, .36, 1),
+        width .6s cubic-bezier(.22, 1, .36, 1),
+        border-radius .55s cubic-bezier(.22, 1, .36, 1),
+        box-shadow .6s ease,
+        background .5s ease,
+        border-color .5s ease,
+        opacity .45s ease,
+        transform .6s cubic-bezier(.22, 1, .36, 1) !important;
+}
+
+/* 侧钮：width/height 已过渡，补 visibility 延迟与背景/阴影过渡 */
+.aq-dock-side {
+    transition:
+        opacity .7s cubic-bezier(.22, 1, .36, 1),
+        transform .75s cubic-bezier(.22, 1, .36, 1),
+        width .75s cubic-bezier(.22, 1, .36, 1),
+        min-width .75s cubic-bezier(.22, 1, .36, 1),
+        max-width .75s cubic-bezier(.22, 1, .36, 1),
+        height .75s cubic-bezier(.22, 1, .36, 1),
+        border-width .4s ease,
+        background .5s ease,
+        box-shadow .5s ease,
+        visibility 0s linear .7s !important;
+}
+
+/* --- v64b 底部两胶囊毛玻璃增强（亮/暗双分支，与主题协调） --- */
+/* 播放条 #aqMini：更强的 blur/saturate + 顶部渐变 + 内高光 */
+#aqMini {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.66)) !important;
+    backdrop-filter: saturate(240%) blur(64px) !important;
+    -webkit-backdrop-filter: saturate(240%) blur(64px) !important;
+    border: 0.5px solid rgba(255, 255, 255, 0.72) !important;
+    box-shadow:
+        0 14px 40px rgba(0, 0, 0, 0.12),
+        0 2px 10px rgba(0, 0, 0, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.92) !important;
+}
+html.dark #aqMini {
+    background: linear-gradient(180deg, rgba(44, 44, 50, 0.84), rgba(22, 22, 28, 0.74)) !important;
+    border: 0.5px solid rgba(255, 255, 255, 0.10) !important;
+    box-shadow:
+        0 14px 40px rgba(0, 0, 0, 0.52),
+        0 2px 10px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+/* 底部导航 #aq-tabbar-inner：blur 增强 + 渐变层次 + 投影 */
+#aq-tabbar .aq-tabbar-inner {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.66)) !important;
+    backdrop-filter: saturate(240%) blur(64px) !important;
+    -webkit-backdrop-filter: saturate(240%) blur(64px) !important;
+    border: 0.5px solid rgba(255, 255, 255, 0.70) !important;
+    box-shadow:
+        0 12px 32px rgba(0, 0, 0, 0.10),
+        0 2px 8px rgba(0, 0, 0, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95),
+        inset 0 -0.5px 0 rgba(0, 0, 0, 0.04) !important;
+    transition: background .5s ease, box-shadow .5s ease, border-color .5s ease !important;
+}
+html.dark #aq-tabbar .aq-tabbar-inner {
+    background: linear-gradient(180deg, rgba(44, 44, 50, 0.86), rgba(22, 22, 28, 0.78)) !important;
+    border-color: rgba(255, 255, 255, 0.10) !important;
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.50),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+/* =====================================================================
+ * v65 播放页沉浸胶囊：去亮边（白边框 0.22 -> 0.05），边缘靠内侧深描边 + 外投影勾勒
+ * ===================================================================== */
+#view-player-detail:not(.np-light) .aq-np-secondary {
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    box-shadow:
+        0 16px 38px rgba(0, 0, 0, 0.42),
+        inset 0 1px 0 rgba(255, 255, 255, 0.07),
+        inset 0 -10px 18px rgba(0, 0, 0, 0.24),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.30) !important;
+}
+#view-player-detail.np-light .aq-np-secondary {
+    border: 1px solid rgba(28, 28, 30, 0.10) !important;
+    box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.16),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95),
+        inset 0 -8px 16px rgba(0, 0, 0, 0.05),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.40) !important;
+}
+
+
+/* =====================================================================
+ * v66 纯色背景模式 np-light 胶囊降亮协调（ui-ux-pro-max 玻璃拟态指引：
+ * 低不透明度同色系 + 细边框 + 阴影分层，不再亮白突兀）
+ * ===================================================================== */
+#view-player-detail.np-light .aq-np-secondary {
+    background: linear-gradient(180deg, rgba(236, 236, 241, 0.62), rgba(228, 228, 234, 0.44)) !important;
+    border: 1px solid rgba(60, 60, 67, 0.20) !important;
+    box-shadow:
+        0 10px 26px rgba(0, 0, 0, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.50),
+        inset 0 -6px 14px rgba(0, 0, 0, 0.05),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.25) !important;
+}
+
+
+/* =====================================================================
+ * v68 沉浸背景（blur 模式）液态氛围优化
+ * 参考 Apple Music 沉浸封面 + AMLL 液态背景 + aurora-ui（mesh 渐变/慢动画/混合融合）
+ * ===================================================================== */
+/* 1) 封面模糊层增强：blur 60px 更沉浸、scale 1.3 少裁切（覆盖 tailwind class） */
+#view-player-detail #detail-bg-cover {
+    filter: blur(60px) saturate(1.25) !important;
+    transform: scale(1.3) !important;
+}
+
+/* 2) overlay 只承载光斑层：去掉自身 backdrop-filter（避免与封面 blur 双重模糊变灰脏） */
+#view-player-detail #player-detail-bg-overlay:not(.t-bg-panel) {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* 3) 暗封面：光斑 screen 混合（与暗色封面融合提亮，液态透出） */
+#view-player-detail.ambient-dark #player-detail-bg-overlay:not(.t-bg-panel) {
+    mix-blend-mode: screen;
+}
+
+/* 4) 光斑缓慢流动（aurora 液态感 12s；掩盖切歌渐变跳变） */
+#view-player-detail:not(.np-light) #player-detail-bg-overlay:not(.t-bg-panel),
+#view-player-detail.np-light #player-detail-bg-overlay:not(.t-bg-panel) {
+    background-size: 160% 160%;
+    animation: aqAmbientFlow 12s ease-in-out infinite;
+}
+@keyframes aqAmbientFlow {
+    0%   { background-position: 0% 0%; }
+    50%  { background-position: 9% 6%; }
+    100% { background-position: 0% 0%; }
+}
+
+/* 5) 底部/顶部 scrim 固定承载（不随光斑动画漂移）：暗封面分支 */
+#view-player-detail.ambient-dark #player-detail-bg-overlay:not(.t-bg-panel)::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg,
+        rgba(6,8,18,0.24) 0%, transparent 26%,
+        transparent 40%,
+        rgba(6,8,18,0.40) 66%, rgba(6,8,18,0.66) 88%, rgba(6,8,18,0.78) 100%);
+}
+/* 亮封面分支：浅色 scrim（顶部轻微压白、底部同色系保证歌词/控件可读） */
+#view-player-detail:not(.ambient-dark) #player-detail-bg-overlay:not(.t-bg-panel)::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg,
+        rgba(250,250,252,0.20) 0%, transparent 28%,
+        transparent 46%,
+        rgba(250,250,252,0.38) 72%, rgba(250,250,252,0.58) 100%);
+}
+/* 过渡：光斑层 opacity 过渡，切歌时渐变刷新更柔和 */
+#view-player-detail #player-detail-bg-overlay:not(.t-bg-panel) {
+    transition: opacity .5s ease;
+}
+
+
+/* =====================================================================
+ * v69 Dock 动画流畅修复：去 layout 回流 + 毛玻璃降载
+ * （上滑 dock 立即整体淡入上浮，不再从 0 高度"长出来"；滚动中不卡顿）
+ * ===================================================================== */
+/* --- tabbar：只动画 opacity/transform/visibility；height 等瞬间切换 --- */
+#aq-tabbar {
+    transition:
+        opacity .32s cubic-bezier(.22, 1, .36, 1),
+        transform .34s cubic-bezier(.22, 1, .36, 1),
+        visibility 0s linear .36s !important;
+    will-change: opacity, transform;
+}
+.aq-dock.collapsed #aq-tabbar {
+    opacity: 0 !important;
+    transform: translateY(18px) !important;
+    height: 0 !important;
+    max-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-width: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+/* --- mini 播放条：只动画 opacity/transform 等视觉属性，去 height/width 回流 --- */
+#aqMini {
+    transition:
+        opacity .32s ease,
+        transform .34s cubic-bezier(.22, 1, .36, 1),
+        border-radius .3s ease,
+        box-shadow .4s ease,
+        background .4s ease,
+        border-color .4s ease !important;
+    will-change: opacity, transform;
+}
+
+/* --- 侧钮：去 width/height 回流，只动画视觉属性 --- */
+.aq-dock-side {
+    transition:
+        opacity .32s cubic-bezier(.22, 1, .36, 1),
+        transform .34s cubic-bezier(.22, 1, .36, 1),
+        background .4s ease,
+        box-shadow .4s ease,
+        border-width .3s ease,
+        visibility 0s linear .34s !important;
+    will-change: opacity, transform;
+}
+
+/* --- 毛玻璃降载：blur 64->46px、saturate 240->200%（亮/暗四分支统一） --- */
+#aqMini,
+#aq-tabbar .aq-tabbar-inner {
+    backdrop-filter: saturate(200%) blur(46px) !important;
+    -webkit-backdrop-filter: saturate(200%) blur(46px) !important;
+}
+html.dark #aqMini,
+html.dark #aq-tabbar .aq-tabbar-inner {
+    backdrop-filter: saturate(200%) blur(46px) !important;
+    -webkit-backdrop-filter: saturate(200%) blur(46px) !important;
+}
+
+
+/* =====================================================================
+ * v70 Dock 液态玻璃 + 弹簧式动画 + 按压反馈
+ * 学习 AndroidLiquidGlass LiquidBottomTabs（Kyant0）：
+ * spring 临界阻尼快收尾 / 按压 1->1.2 缩放 / 轻 blur + vibrancy + 低不透明度容器
+ * ===================================================================== */
+/* --- 过渡提速 + easeOutExpo（临界阻尼：快启动、干脆收尾，无拖沓感） --- */
+#aq-tabbar {
+    transition:
+        opacity .26s cubic-bezier(.19, 1, .22, 1),
+        transform .28s cubic-bezier(.19, 1, .22, 1),
+        visibility 0s linear .3s !important;
+    will-change: opacity, transform;
+}
+.aq-dock.collapsed #aq-tabbar {
+    opacity: 0 !important;
+    transform: translateY(14px) !important;
+    height: 0 !important;
+    max-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-width: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none;
+    overflow: hidden;
+}
+#aqMini {
+    transition:
+        opacity .26s ease,
+        transform .28s cubic-bezier(.19, 1, .22, 1),
+        border-radius .26s ease,
+        box-shadow .34s ease,
+        background .34s ease,
+        border-color .34s ease !important;
+    will-change: opacity, transform;
+}
+.aq-dock-side {
+    transition:
+        opacity .26s cubic-bezier(.19, 1, .22, 1),
+        transform .28s cubic-bezier(.19, 1, .22, 1),
+        background .34s ease,
+        box-shadow .34s ease,
+        border-width .26s ease,
+        visibility 0s linear .28s !important;
+    will-change: opacity, transform;
+}
+
+/* --- 液态玻璃：轻 blur + 高 saturate（vibrancy）+ 低不透明度容器 --- */
+#aqMini,
+#aq-tabbar .aq-tabbar-inner {
+    backdrop-filter: saturate(260%) blur(28px) !important;
+    -webkit-backdrop-filter: saturate(260%) blur(28px) !important;
+}
+html.dark #aqMini,
+html.dark #aq-tabbar .aq-tabbar-inner {
+    backdrop-filter: saturate(260%) blur(28px) !important;
+    -webkit-backdrop-filter: saturate(260%) blur(28px) !important;
+}
+/* 容器不透明度调低（浅 0.62 单色 / 暗 0.52），透出滚动内容增强液态感 */
+#aqMini {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.66), rgba(255, 255, 255, 0.52)) !important;
+}
+html.dark #aqMini {
+    background: linear-gradient(180deg, rgba(38, 38, 44, 0.58), rgba(22, 22, 28, 0.48)) !important;
+}
+#aq-tabbar .aq-tabbar-inner {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.66), rgba(255, 255, 255, 0.52)) !important;
+}
+html.dark #aq-tabbar .aq-tabbar-inner {
+    background: linear-gradient(180deg, rgba(38, 38, 44, 0.58), rgba(22, 22, 28, 0.48)) !important;
+}
+
+/* --- 按压反馈（Liquid pressProgress：按下图标/胶囊放大 1.15） --- */
+#aq-tabbar .aq-tab {
+    transition: transform .15s ease, background .2s ease, color .2s ease !important;
+}
+#aq-tabbar .aq-tab:active {
+    transform: scale(0.94) !important;
+}
+#aqMini:active {
+    transform: scale(0.985) !important;
+}
+
+/* --- 选中 tab 液态胶囊（静态胶囊 + 内高光，对应 Liquid 活动胶囊） --- */
+#aq-tabbar .aq-tab.on {
+    background: rgba(255, 255, 255, 0.55) !important;
+    border-radius: 999px !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.85),
+        0 2px 10px rgba(0, 0, 0, 0.08) !important;
+}
+html.dark #aq-tabbar .aq-tab.on {
+    background: rgba(255, 255, 255, 0.10) !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        0 2px 10px rgba(0, 0, 0, 0.3) !important;
+}
+#aq-tabbar .aq-tab.on svg {
+    transform: scale(1.08) !important;
+    transition: transform .2s cubic-bezier(.19, 1, .22, 1) !important;
+}
+
+
+/* =====================================================================
+ * v71 Dock 阻尼弹簧配套（视觉属性交还 JS spring 驱动）
+ * ===================================================================== */
+/* tabbar：去掉 transition（JS 每帧写 opacity/transform），collapsed 布局属性保留瞬间切换 */
+#aq-tabbar {
+    transition: none !important;
+}
+.aq-dock.collapsed #aq-tabbar {
+    opacity: 1;
+    transform: none;
+    visibility: visible;
+    pointer-events: auto;
+    height: 0 !important;
+    max-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-width: 0 !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    flex: 0 0 0 !important;
+    position: absolute !important;
+    left: 0; right: 0; bottom: 0;
+    overflow: hidden;
+}
+/* 侧钮：transition 移除（JS spring 驱动 opacity/scale），布局尺寸仍由 skin.css 控制 */
+.aq-dock-side {
+    transition: none !important;
+}
+.aq-dock.collapsed .aq-dock-side {
+    opacity: 1;
+    transform: scale(1);
+    visibility: visible;
+    pointer-events: auto;
+}
+
+
+/* =====================================================================
+ * v72 Dock 重构：tabbar 3 tab（主页/资料库/设置）+ 搜索独立毛玻璃 dock + 滑动胶囊
+ * ===================================================================== */
+/* --- 滑动胶囊指示器（Liquid 效果） --- */
+#aq-tabbar .aq-tabbar-inner {
+    position: relative !important;
+}
+.aq-tab-indicator {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 0;
+    z-index: 0;
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.55)) !important;
+    box-shadow:
+        0 2px 10px rgba(0, 0, 0, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+    will-change: transform;
+}
+html.dark .aq-tab-indicator {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.08)) !important;
+    box-shadow:
+        0 2px 10px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.10) !important;
+}
+/* 选中 tab：静态胶囊背景移除（由指示器承载），文字/图标高亮 */
+#aq-tabbar .aq-tab.on {
+    background: transparent !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    color: var(--pink, #fa2d48);
+    z-index: 1;
+}
+html.dark #aq-tabbar .aq-tab.on {
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--pink, #fa2d48);
+}
+#aq-tabbar .aq-tab {
+    position: relative;
+    z-index: 1;
+}
+
+/* --- tabbar 右侧让位给搜索独立 dock（展开态）：背景条收窄形成间隔，不覆盖搜索 dock --- */
+.aq-dock:not(.collapsed) #aq-tabbar .aq-tabbar-inner {
+    /* [v76b] 覆盖 skin.css width:min(430px,100%)：背景条撑满剩余，与搜索 dock 紧凑同一行 */
+    width: auto !important;
+    flex: 1 1 auto !important;
+    margin-left: 0 !important;
+    margin-right: 88px !important;
+}
+.aq-dock:not(.collapsed) #aqDockSearch {
+    position: absolute;
+    right: 6px;
+    bottom: 0;
+    width: 72px;
+    height: 56px;
+    margin: 0;
+    border-radius: 999px;
+}
+/* --- 搜索独立毛玻璃 dock：常驻胶囊（展开/收合都显示） --- */
+.aq-dock #aqDockSearch {
+    position: absolute;
+    z-index: 60;
+    width: 72px;
+    height: 52px;
+    min-width: 72px;
+    max-width: 72px;
+    overflow: hidden;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.56)) !important;
+    backdrop-filter: saturate(260%) blur(28px) !important;
+    -webkit-backdrop-filter: saturate(260%) blur(28px) !important;
+    border: 0.5px solid rgba(255, 255, 255, 0.75) !important;
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.12),
+        0 2px 8px rgba(0, 0, 0, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+    color: var(--label-1, rgba(28, 28, 30, 0.92));
+    pointer-events: auto;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+html.dark .aq-dock #aqDockSearch {
+    background: linear-gradient(180deg, rgba(44, 44, 50, 0.72), rgba(22, 22, 28, 0.60)) !important;
+    border-color: rgba(255, 255, 255, 0.10) !important;
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+    color: rgba(255, 255, 255, 0.92);
+}
+.aq-dock #aqDockSearch.on {
+    color: var(--pink, #fa2d48);
+}
+/* 收合态：搜索 dock 作为行内胶囊在 mini 右侧 */
+.aq-dock.collapsed #aqDockSearch {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    width: 72px;
+    height: 52px;
+    min-width: 72px;
+    flex: 0 0 72px;
+    margin: 0;
+    border-radius: 999px;
+}
+/* 收合态布局：主页钮 + mini 胶囊 + 搜索 dock（主页钮/搜索 dock 均由侧钮样式承载） */
+.aq-dock.collapsed #aqMini {
+    margin: 0 8px !important;
+}
+
+
+
+/* =====================================================================
+ * v76 Dock 玻璃增强 + 紧凑同一行（ui-ux-pro-max glassmorphism：blur 更强 + 高不透明度层叠）
+ * ===================================================================== */
+/* 搜索 dock：毛玻璃增强（blur 28→36 / saturate 260→300）+ 不透明度提高（亮/暗） */
+.aq-dock #aqDockSearch {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.70)) !important;
+    backdrop-filter: saturate(300%) blur(36px) !important;
+    -webkit-backdrop-filter: saturate(300%) blur(36px) !important;
+    border-color: rgba(255, 255, 255, 0.82) !important;
+    box-shadow:
+        0 10px 28px rgba(0, 0, 0, 0.14),
+        0 2px 8px rgba(0, 0, 0, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 1) !important;
+}
+html.dark .aq-dock #aqDockSearch {
+    background: linear-gradient(180deg, rgba(48, 48, 56, 0.84), rgba(28, 28, 36, 0.72)) !important;
+    border-color: rgba(255, 255, 255, 0.14) !important;
+    box-shadow:
+        0 10px 28px rgba(0, 0, 0, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.10) !important;
+}
+/* 主页 dock（tabbar 背景条）：毛玻璃增强 + 不透明度提高（亮/暗） */
+#aq-tabbar .aq-tabbar-inner {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.64)) !important;
+    backdrop-filter: saturate(280%) blur(32px) !important;
+    -webkit-backdrop-filter: saturate(280%) blur(32px) !important;
+    border-color: rgba(255, 255, 255, 0.78) !important;
+}
+html.dark #aq-tabbar .aq-tabbar-inner {
+    background: linear-gradient(180deg, rgba(44, 44, 52, 0.70), rgba(26, 26, 34, 0.60)) !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+}
+/* mini 播放器胶囊：backdrop 同步增强（不透明度不动，避免影响播放页沉浸协调） */
+#aqMini {
+    backdrop-filter: saturate(280%) blur(32px) !important;
+    -webkit-backdrop-filter: saturate(280%) blur(32px) !important;
+}
+html.dark #aqMini {
+    backdrop-filter: saturate(280%) blur(32px) !important;
+    -webkit-backdrop-filter: saturate(280%) blur(32px) !important;
+}
+
+
+/* =====================================================================
+ * v77 参考图风格：去掉滑动指示器胶囊（tab 平铺变色）+ mini 播放器居中窄条
+ * ===================================================================== */
+/* 滑动胶囊指示器 = 用户所见"小毛玻璃胶囊"：彻底隐藏，选中态由 pink 变色+图标放大表达 */
+#aqTabIndicator {
+    display: none !important;
+}
+/* 展开态 mini 播放器：全宽横条 → 居中窄条（手机/桌面自适应 min(430px, 94%)） */
+.aq-dock:not(.collapsed) #aqMini {
+    align-self: center !important;
+    width: min(430px, 94%) !important;
+    flex: 0 0 auto !important;
+}
+
+
+/* =====================================================================
+ * v78 Dock 动效/震动 MeloX 完整移植（水珠指示器物理 + 按压/辉光 + 双拍触感）
+ * 覆盖 v77「隐藏指示器」与 v70「tab 自缩放」：选中由水珠承载（毛玻璃态）
+ * ===================================================================== */
+/* --- 水珠指示器恢复：毛玻璃水滴（MeloX frostedGlass：blur 8dp + surfaceColor 叠层） --- */
+#aqTabIndicator {
+    display: block !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 0 !important;
+    z-index: 2 !important;
+    height: 46px !important;
+    border-radius: 999px !important;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.52), rgba(255, 255, 255, 0.36)) !important;
+    backdrop-filter: saturate(180%) blur(0.5px) !important;
+    -webkit-backdrop-filter: saturate(180%) blur(0.5px) !important;
+    border: 0.5px solid rgba(255, 255, 255, 0.82) !important;
+    box-shadow:
+        0 2px 10px rgba(0, 0, 0, 0.07),
+        inset 0 1px 0 rgba(255, 255, 255, 0.98) !important;
+    will-change: transform, opacity, width;
+    pointer-events: none !important;
+}
+html.dark #aqTabIndicator {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06)) !important;
+    border-color: rgba(255, 255, 255, 0.16) !important;
+    box-shadow:
+        0 2px 10px rgba(0, 0, 0, 0.30),
+        inset 0 1px 0 rgba(255, 255, 255, 0.16) !important;
+}
+/* 按压辉光（对齐 InteractiveHighlight 距离衰减白光，毛玻璃态径向渐变近似） */
+.aq-droplet-glow {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    background: radial-gradient(circle at var(--gx, 50%) 50%,
+        rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.32) 42%, rgba(255, 255, 255, 0) 64%);
+    mix-blend-mode: plus-lighter;
+    opacity: 0;
+    pointer-events: none;
+    will-change: opacity;
+}
+/* --- tabbar 面板：JS spring 驱动 transform，取消 CSS 过渡与 L1 按压缩放 --- */
+#aq-tabbar .aq-tabbar-inner {
+    transform-origin: center bottom !important;
+    will-change: transform;
+    transition: none !important;
+    touch-action: none !important;
+}
+#aq-tabbar .aq-tab:active {
+    transform: none !important;
+}
+#aq-tabbar .aq-tab.on svg {
+    transform: none !important;
+}
+/* 水珠按压时 L2 图标呼吸 1.2×（MeloX tabScale = lerp(1, 1.2, pressProgress)） */
+#aq-tabbar .aq-tab svg {
+    transition: transform .22s cubic-bezier(.19, 1, .22, 1) !important;
+}
+#aq-tabbar .aq-tabbar-inner.aq-droplet-press .aq-tab svg {
+    transform: scale(1.2) !important;
+}
+/* --- 选中色交 JS 颜色弹簧（spring(0.84,480)）：背景/边框归零，颜色由内联 rgb 驱动 --- */
+#aq-tabbar .aq-tab,
+#aq-tabbar .aq-tab.on {
+    background: transparent !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+/* --- mini 播放条：JS spring(0.34,300) 驱动 reveal，取消 CSS 过渡 --- */
+#aqMini {
+    transition: none !important;
+    will-change: transform, opacity;
+}
+/* --- 收合展开：tabbar 视觉完全交 JS spring --- */
+#aq-tabbar {
+    will-change: opacity, transform;
+}
+
+/* =====================================================================
+ * v81 收合态主页水珠钮（MeloX 收合 = 主页单钮 dock）
+ * ===================================================================== */
+.aq-dock #aqDockHome {
+    position: relative;
+    z-index: 60;
+    width: 52px;
+    height: 52px;
+    min-width: 52px;
+    max-width: 52px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.70)) !important;
+    backdrop-filter: saturate(300%) blur(36px) !important;
+    -webkit-backdrop-filter: saturate(300%) blur(36px) !important;
+    border: 0.5px solid rgba(255, 255, 255, 0.82) !important;
+    box-shadow:
+        0 10px 28px rgba(0, 0, 0, 0.14),
+        inset 0 1px 0 rgba(255, 255, 255, 1) !important;
+    color: var(--label-1, rgba(28, 28, 30, 0.92));
+    pointer-events: auto;
+    visibility: visible !important;
+    opacity: 1 !important;
+    margin: 0;
+    transition: none !important;
+}
+html.dark .aq-dock #aqDockHome {
+    background: linear-gradient(180deg, rgba(48, 48, 56, 0.84), rgba(28, 28, 36, 0.72)) !important;
+    border-color: rgba(255, 255, 255, 0.14) !important;
+    box-shadow:
+        0 10px 28px rgba(0, 0, 0, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.10) !important;
+    color: rgba(255, 255, 255, 0.92);
+}
+.aq-dock #aqDockHome.on {
+    color: var(--pink, #fa2d48);
+}
+/* 展开态主页钮隐藏（由 tabbar 承载），收合态出现 */
+.aq-dock:not(.collapsed) #aqDockHome {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+.aq-dock.collapsed #aqDockHome {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+/* 收合态一行：[主页钮][mini 播放器][搜索 dock] 紧凑排布 */
+.aq-dock.collapsed {
+    align-items: center;
+}
+.aq-dock.collapsed #aqMini {
+    margin: 0 8px !important;
+    flex: 1 1 auto !important;
+    width: auto !important;
+    max-width: calc(100% - 140px) !important;
+}
+
+/* =====================================================================
+ * v82 严格对齐 MeloX 仓库几何（ChromeExpandedSize=57 / CompactSize=46 / dropletHeight=navHeight-8）
+ * ===================================================================== */
+/* nav 胶囊（tabbar）展开高 57px（MeloX ChromeExpandedSize 57dp） */
+.aq-dock:not(.collapsed) #aq-tabbar .aq-tabbar-inner {
+    height: 57px !important;
+}
+/* 水珠：高 = navHeight-8 = 49px（MeloX L1780）；宽由 JS 驱动 min(tabWidth*1.15+2, tabWidth+12) */
+#aqTabIndicator {
+    height: 49px !important;
+}
+/* 展开态 tabbar 右侧让位：搜索键 57 + gap 7 = 64px（MeloX L1659 searchGap=7dp） */
+.aq-dock:not(.collapsed) #aq-tabbar .aq-tabbar-inner {
+    margin-right: 64px !important;
+}
+/* 搜索键：展开 57x57 Capsule（MeloX searchSize=ChromeExpandedSize=57dp），与 nav 胶囊同高同行 */
+.aq-dock:not(.collapsed) #aqDockSearch {
+    width: 57px !important;
+    height: 57px !important;
+    min-width: 57px !important;
+    max-width: 57px !important;
+    right: 6px !important;
+    bottom: 0 !important;
+}
+/* 收合态：搜索键 46x46（MeloX ChromeCompactSize=46dp） */
+.aq-dock.collapsed #aqDockSearch {
+    width: 46px !important;
+    height: 46px !important;
+    min-width: 46px !important;
+    max-width: 46px !important;
+    flex: 0 0 46px !important;
+}
+/* 收合胶囊：46px（MeloX compactSize=48dp→ChromeCompactSize=46dp 收合胶囊），图标 25px 居中 */
+.aq-dock #aqDockHome {
+    width: 46px !important;
+    height: 46px !important;
+    min-width: 46px !important;
+    max-width: 46px !important;
+}
+/* 收合态一行：[收合胶囊][mini][搜索] 共中心线（MeloX compactMiniWrapperX 同口径） */
+.aq-dock.collapsed {
+    align-items: center !important;
+}
+.aq-dock.collapsed #aqMini {
+    margin: 0 8px !important;
+    flex: 1 1 auto !important;
+    width: auto !important;
+    max-width: calc(100% - 108px) !important;
+}
+
+/* =====================================================================
+ * v83：外层 #aq-tabbar 与 inner 同高 57px（底部对齐搜索键），MeloX navHeight=ChromeExpandedSize=57dp
+ * ===================================================================== */
+.aq-dock:not(.collapsed) #aq-tabbar {
+    height: 57px !important;
+}
+
+/* =====================================================================
+ * v86：毛玻璃模式移除水珠（MeloX frostedGlass 口径：L3 水珠不渲染）
+ * ===================================================================== */
+#aqTabIndicator {
+    display: none !important;
+}
+
+/* =====================================================================
+ * v90：全部 dock（mini 播放器 + 主页/资料库/设置 + 搜索）整体上移 10px
+ * 容器 bottom 由 skin.css 6px->16px 承载；spring 展开 drop 由 JS 16px->6px
+ * 同步，保证 tabbar/搜索不再被压回屏幕底。
+ * ===================================================================== */
+
+/* =====================================================================
+ * v92：dock 三栏水平对齐（MeloX 权威口径，MeloXApp.kt L1626/L1651/L1661）
+ *   展开态 mini 播放条水平边距 = nav 整排（tab胶囊+搜索键）水平边距 = 12dp，
+ *   即两条胶囊左右边缘必须对齐成一条竖线。
+ *   旧 skin.css 的 #aqMini{width:min(406px,100%-20px)} 让 mini 比 nav 排
+ *   内缩约 10px，视觉上窄一截、不居中；这里以高特异性铺满 dock 容器。
+ *   收合态（.collapsed）保持 margin 0 8px 不变（compactGap 8 口径）。
+ * ===================================================================== */
+.aq-dock:not(.collapsed) #aqMini {
+    width: 100% !important;
+    margin: 0 !important;
+    left: auto !important;
+    right: auto !important;
+}
+
+/* =====================================================================
+ * v93：主页/资料库/设置胶囊右侧与搜索 dock 留出间隙
+ * 原 margin-right 64px 使胶囊右缘距搜索钮左缘仅 1px（挨着）；
+ * 加大到 71px -> 间隙 8px，对齐 MeloX searchGap=7dp。搜索钮保持不动。
+ * ===================================================================== */
+.aq-dock:not(.collapsed) #aq-tabbar .aq-tabbar-inner {
+    margin-right: 71px !important;
+}
+
+/* =====================================================================
+ * v94：mini 播放条右缘与搜索钮右缘对齐（整排视觉右缘 375px 处）
+ * dock 容器宽 368（左13/右13），搜索钮右缘=容器右缘-6=375，
+ * 故 mini 宽度 = 100% - 6px（左缘保持13与胶囊左缘对齐，右缘与搜索钮右缘对齐）。
+ * 三个 dock 成同一视觉整体、页面居中。
+ * ===================================================================== */
+.aq-dock:not(.collapsed) #aqMini {
+    width: calc(100% - 6px) !important;
+    margin: 0 !important;
+    left: auto !important;
+    right: auto !important;
+    /* dock flex-column 默认交叉轴居中让 mini 两侧各内缩 3px，
+       强制左对齐：左缘=胶囊左缘13，右缘=搜索钮右缘375 */
+    align-self: flex-start !important;
+}

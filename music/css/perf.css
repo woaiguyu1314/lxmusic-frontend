@@ -1,0 +1,117 @@
+/* =============================================================================
+   perf.css —— Android WebView 性能优化（最后加载，覆盖前面所有样式）
+   ----------------------------------------------------------------------------
+   1) 关掉 backdrop-filter：整个项目有 100+ 处毛玻璃，安卓 WebView 每帧都要做一次
+       backdrop readback + 高斯模糊，是「点击发顿 / 滚动掉帧」的头号元凶。
+      这里的玻璃面板底色本来就有 0.72~0.94 的不透明度，去掉模糊观感几乎不变。
+   2) 关掉主页封面上持续不停的装饰性动画（黑胶旋转 / 传送门 / 轨道 / 全息）。
+   3) touch-action: manipulation + 去掉点击高亮，消除 300ms 点击延迟的观感。
+   ============================================================================= */
+
+/* ---------- 1. 毛玻璃：全局关闭 ---------- */
+*,
+*::before,
+*::after {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* 少数「必须」有底色的浮层，关掉模糊后补一点不透明度，避免文字透底 */
+.sheet,
+.q-pop,
+.plat-menu,
+.glass,
+.t-bg-glass,
+.dock-side,
+.np-bg::after {
+    background-color: rgba(255, 255, 255, 0.9) !important;
+}
+.ref-dark .sheet,
+.ref-dark .q-pop,
+.ref-dark .plat-menu,
+.ref-dark .set-block,
+.ref-dark .src-editor {
+    background-color: rgba(24, 24, 27, 0.92) !important;
+}
+
+/* ---------- 2. 封面装饰动画：不在播放页时才停 ----------
+   注意：.fp-vinyl / .fp-portal / .fp-orbit / .fp-holo 这些类只存在于
+   播放详情页的真实封面 #lxCoverArt 里（见 aq-cover-fx.js），不是首页卡片。
+   之前用 `animation: none` 无差别关掉，等于把详情页封面的特效整个抹掉了，
+   特效"不明显"就是这个引起的。正确做法是：详情页不可见时用
+   animation-play-state: paused 冻结，状态保留，切回来无缝续播；
+   真要省电就交给脚本（aq-cover-fx.js 的 tick 已按可见性门控）。 */
+#view-player-detail.hidden .fp-art *,
+#view-player-detail.hidden .fp-art *::before,
+#view-player-detail.hidden .fp-art *::after,
+#view-player-detail.is-paused .fp-art *,
+#view-player-detail.is-paused .fp-art *::before,
+#view-player-detail.is-paused .fp-art *::after {
+    animation-play-state: paused !important;
+}
+
+/* ---------- 2b. 封面特效层提升到独立合成层 ----------
+   旋转/扫描/轨道都是纯 transform/opacity 动画，给它们独立层后不再触发
+   整个详情页的重绘，切歌切页时顺滑很多。
+   只加在这些特效自身的元素上，绝不加到 #view-* 容器上——容器一旦有
+   transform 会变成新的包含块，内部 position:fixed 会错位。 */
+.fp-art-stage,
+.fp-vinyl,
+.fp-portal,
+.fp-portal > *,
+.fp-orbit,
+.fp-orbit > *,
+.fp-holo,
+.fp-holo > *,
+.fp-pulse-ring,
+#lxSpectrum, #lxSpectrum i {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+/* ---------- 3. 点击响应 ---------- */
+html {
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    overscroll-behavior-y: none;
+}
+
+button,
+a,
+[role="button"],
+.lib-item,
+.song,
+.song-row,
+.aq-tab,
+.aq-list-item,
+.setting-item,
+input,
+select,
+textarea {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+/* 长列表里的封面缩略图交给浏览器自己决定何时解码，别强制同步解码 */
+.song-art,
+.aq-imp-art {
+    content-visibility: auto;
+}
+
+/* ---------- 4. 点击即时反馈（消除“点下去没反应”的观感） ---------- */
+button:active,
+a:active,
+[role="button"]:active,
+.lib-item:active,
+.song:active,
+.song-row:active,
+.aq-tab:active,
+.aq-list-item:active,
+.setting-item:active {
+    transform: scale(0.97) !important;
+    opacity: 0.85 !important;
+    transition: transform 60ms ease-out, opacity 60ms ease-out !important;
+}

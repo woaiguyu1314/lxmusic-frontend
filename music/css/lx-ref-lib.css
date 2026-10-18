@@ -1,0 +1,40 @@
+.ref-lib-scope /* —— Library tiles —— */
+.lib-list{ list-style: none; }
+.ref-lib-scope .lib-list{ list-style: none; }
+.ref-lib-scope .lib-block{
+  border-bottom: 0.5px solid var(--separator);
+}
+.ref-lib-scope .lib-item{
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 0; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.ref-lib-scope .lib-icon{
+  width: 28px; height: 28px; border-radius: 6px;
+  display: grid; place-items: center; color: var(--pink);
+  flex-shrink: 0;
+}
+.ref-lib-scope .lib-icon svg{ width: 22px; height: 22px; }
+.ref-lib-scope .lib-label{ font-size: 17px; flex: 1; }
+.ref-lib-scope .lib-count{ font-size: 15px; color: var(--label-3); }
+.ref-lib-scope .lib-chevron{
+  color: var(--label-3); font-size: 12px;
+  transition: transform .28s cubic-bezier(0.32, 0.72, 0, 1);
+  display: inline-block;
+}
+.ref-lib-scope .lib-block.open .lib-chevron{ transform: rotate(90deg); }
+.ref-lib-scope .lib-panel{
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height .35s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.ref-lib-scope .lib-block.open .lib-panel{
+  max-height: 70vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 8px;
+}
+.ref-lib-scope .lib-block .lib-panel{max-height:0;overflow:hidden;transition:max-height .35s cubic-bezier(0.32,0.72,0,1)}
+.ref-lib-scope .lib-block.open .lib-panel{max-height:3000px}
+.ref-lib-scope .lib-block .lib-chevron{transition:transform .25s}
+.ref-lib-scope .lib-block.open .lib-chevron{transform:rotate(90deg)}

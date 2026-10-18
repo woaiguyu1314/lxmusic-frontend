@@ -1,0 +1,254 @@
+/* =============================================================================
+ * aq-enhance.css —— 参考网页缺失效果补齐样式（配套 aq-enhance.js）
+ * -----------------------------------------------------------------------------
+ * · mini 歌词滚动（当前行 + 下一行，左淡出/右侧滑入/跑马灯）
+ * · 沉浸式播放页（取色融合背景 + 顶部清晰封面）
+ * · Dock 收合/展开
+ * · 播放页工具行 / 定时弹层 / 设置页增强行
+ * ========================================================================== */
+
+/* ------------------------- mini 歌词滚动 ------------------------- */
+
+.aq-mini-sub.aq-mini-lyric {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    min-width: 0;
+    line-height: 1.25;
+}
+.aq-mini-ly-track {
+    display: none;
+    position: relative;
+    height: 20px;
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+}
+.aq-mini-sub.aq-mini-lyric .aq-mini-ly-track { display: block; }
+.aq-mini-sub.aq-mini-lyric .aq-mini-artist { display: none; }
+.aq-mini-ly-line {
+    position: absolute;
+    left: 0; right: 0; top: 0;
+    height: 20px;
+    line-height: 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    font-size: 16.5px;
+    font-weight: 600;
+    /* 参考页酒红 #b83a4e（ref-ui 里是 --np-accent；本地缺失则回退 --pink） */
+    color: var(--np-accent, var(--pink, #b83a4e));
+    opacity: 1;
+    transform: translateX(0);
+    transition: transform .32s cubic-bezier(0.22, 1, 0.36, 1), opacity .28s ease;
+    will-change: transform;
+}
+.aq-mini-ly-line.is-cur {
+    color: var(--pink, #fa2d48);
+    font-weight: 600;
+}
+.aq-mini-ly-line.is-next { display: none !important; }
+/* 旧句淡出（参考页：-18px） */
+.aq-mini-ly-line.is-cur.is-out {
+    opacity: 0;
+    transform: translateX(-18px);
+    pointer-events: none;
+    animation: none;
+}
+/* 新句从右侧滑入（参考页：28px） */
+.aq-mini-ly-line.is-cur.is-from-right {
+    opacity: 0;
+    transform: translateX(28px);
+    transition: none;
+    animation: none;
+}
+.aq-mini-ly-line.is-cur.is-from-right.is-enter {
+    opacity: 1;
+    transform: translateX(0);
+    transition: transform .32s cubic-bezier(0.22, 1, 0.36, 1), opacity .28s ease;
+    animation: none;
+}
+/* 过长歌词：单次跑马灯（参考页：只跑一遍，停在末尾，不循环） */
+.aq-mini-ly-line.is-marquee {
+    text-overflow: clip;
+    overflow: visible;
+    transition: none;
+    animation: aq-ly-marquee var(--mq-dur, 4s) linear 0.55s 1 forwards;
+}
+@keyframes aq-ly-marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(var(--mq-dx, -60px)); }
+}
+.aq-mini-artist {
+    font-size: 11px;
+    color: var(--label-3, rgba(60, 60, 67, 0.45));
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ------------------------- 沉浸式播放页（2026-09-25：整节删除） -------------------------
+ * 原因：.aq-amb 氛围层（取色渐变+模糊封面+暗罩）盖在原版背景层之上，
+ * 且 .aq-immersive 把播放页改成取色底+顶部海报，导致原版“歌曲播放页背景”
+ * （封面虚化/纯色/黑色）三态与原版不一致。删掉后背景三态完全由原版
+ * applyPlayerBackground(mode) 控制。该咋显示就咋显示。 */
+
+/* ------------------------- Dock 状态过渡 ------------------------- */
+/* Dock 的固定定位/隐藏/层级由 skin.css 统一管理。
+ * 播放页打开时由 body.aq-np-open 整体隐藏；不再保留旧 fixed 布局规则，避免两份 CSS 打架。 */
+#aqMini {
+    transition: transform .38s cubic-bezier(.34, 1.3, .64, 1), opacity .3s ease;
+}
+
+/* ------------------------- 播放页工具行 ------------------------- */
+
+.aq-np-tools {
+    display: flex;
+    gap: 4px;
+    width: 100%;
+    max-width: 420px;
+    margin: 2px auto 0;
+    padding: 0 10px;
+}
+.aq-np-tools button {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 7px 2px 6px;
+    border: none;
+    background: transparent;
+    color: var(--label-2, rgba(60, 60, 67, 0.6));
+    font-size: 10px;
+    font-family: inherit;
+    cursor: pointer;
+    border-radius: 10px;
+    transition: color .2s ease, opacity .2s ease, transform .12s ease;
+    -webkit-tap-highlight-color: rgba(250, 45, 72, 0.12);
+}
+.aq-np-tools button i {
+    font-size: 15px;
+}
+.aq-np-tools button:active {
+    opacity: 0.5;
+    transform: scale(0.92);
+}
+.aq-np-tools button.on {
+    color: var(--pink, #fa2d48);
+}
+/* （已删除：.aq-immersive 下工具行亮色，沉浸模式已移除） */
+
+/* ------------------------- 定时关闭弹层 ------------------------- */
+
+.aq-qpop-mask {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.32);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .25s ease, visibility .25s ease;
+    z-index: 8000;
+}
+.aq-qpop-mask.open {
+    opacity: 1;
+    visibility: visible;
+}
+.aq-qpop {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translate(-50%, 110%);
+    width: min(420px, 100vw);
+    background: var(--surface, #fafafc);
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.16);
+    z-index: 8001;
+    padding: 10px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+    transition: transform .32s cubic-bezier(0.32, 1.25, 0.64, 1);
+    max-height: 74vh;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+.aq-qpop.open {
+    transform: translate(-50%, 0);
+}
+.aq-qpop-title {
+    font-size: 12px;
+    color: var(--label-3, rgba(60, 60, 67, 0.55));
+    padding: 8px 6px 4px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.aq-qpop-body {
+    display: flex;
+    flex-direction: column;
+}
+.aq-qpop-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    padding: 13px 10px;
+    border: none;
+    background: transparent;
+    color: var(--label, #1c1c1e);
+    font-size: 15px;
+    font-family: inherit;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: background .15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+.aq-qpop-item:active {
+    background: var(--fill, rgba(120, 120, 128, 0.12));
+}
+.aq-qpop-item.on .aq-qpop-label {
+    color: var(--pink, #fa2d48);
+    font-weight: 700;
+}
+.aq-qpop-item i.fa-check {
+    color: var(--pink, #fa2d48);
+}
+
+html.dark .aq-qpop {
+    background: #1c1c1e;
+}
+html.dark .aq-qpop-item {
+    color: #f2f2f7;
+}
+html.dark .aq-qpop-item:active {
+    background: rgba(120, 120, 128, 0.18);
+}
+
+/* ------------------------- 通用 toast（若全局已有则跳过） ------------------------- */
+.aq-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 120px;
+    transform: translateX(-50%) translateY(12px);
+    background: rgba(28, 28, 30, 0.88);
+    color: #fff;
+    font-size: 13px;
+    padding: 9px 16px;
+    border-radius: 999px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .25s ease, transform .25s ease, visibility .25s;
+    z-index: 9500;
+    max-width: 84vw;
+    text-align: center;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.22);
+}
+.aq-toast.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}

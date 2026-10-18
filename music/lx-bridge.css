@@ -1,0 +1,16 @@
+/* 数据桥覆盖样式：收藏登录条 + 榜单分页 */
+.lx-loginbar{display:flex;align-items:center;gap:8px;padding:10px 14px;margin:0 0 8px;border-radius:12px;background:var(--fill-2,#f0f0f4);font-size:13px;color:var(--label-2,#666)}
+.lx-loginbar button{border:none;border-radius:8px;padding:6px 12px;background:var(--pink,#fa2d48);color:#fff;font-size:13px;cursor:pointer}
+/* 榜单横滑分页：3列网格卡片，左右滑动换页 */
+.rank-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;padding:0 2px;scrollbar-width:none}
+.rank-track::-webkit-scrollbar{display:none}
+.rank-page{flex:0 0 100%;display:grid;grid-template-columns:repeat(3,1fr);gap:12px 10px;scroll-snap-align:start}
+.rank-pager{display:flex;align-items:center;justify-content:center;gap:12px;padding:10px 0 2px;font-size:13px;color:var(--label-3)}
+.rank-pager button{border:1px solid var(--separator,#ddd);background:var(--surface,#fff);border-radius:16px;padding:4px 14px;font-size:13px;cursor:pointer;color:var(--label)}
+/* 数据桥覆盖：站源菜单只留洛雪5源；设置页嵌官方设置浮层 */
+#platMenu [data-plat="bilibili"]{display:none !important}
+/* 官方设置浮层 */
+#lxSetShell{position:fixed;inset:0;z-index:999;display:none;background:rgba(0,0,0,.45)}
+#lxSetShell.open{display:block}
+#lxSetFrame{position:absolute;inset:4% 3%;border:none;border-radius:14px;background:#fff;width:94%;height:92%}
+#lxSetClose{position:absolute;top:calc(4% + 8px);right:calc(3% + 8px);z-index:1000;border:none;border-radius:50%;width:32px;height:32px;font-size:16px;background:#eee;cursor:pointer}

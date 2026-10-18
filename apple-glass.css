@@ -1,0 +1,372 @@
+/* ============================================================
+   Apple Glassmorphism Overlay — LX Music 管理控制台
+   在 style.css 之后加载，纯增量覆盖：
+   · 不修改任何 HTML 结构、JS 逻辑与类名
+   · 深色 macOS 式毛玻璃：aurora 动态背景 + 全表面磨砂
+   ============================================================ */
+
+/* ---------- 1. 主题变量重定义 ---------- */
+
+:root {
+  /* 页面底色：半透明，露出背后 aurora */
+  --bg-primary: rgba(10, 14, 39, 0.62);
+  --bg-secondary: rgba(16, 20, 45, 0.55);
+  --bg-tertiary: rgba(26, 31, 58, 0.5);
+
+  /* 玻璃：更通透 */
+  --glass-bg: rgba(24, 29, 55, 0.48);
+  --glass-border: rgba(255, 255, 255, 0.12);
+
+  /* Apple 式柔和投影 */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25), 0 4px 14px -4px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 10px -2px rgba(0, 0, 0, 0.35), 0 14px 34px -12px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 8px 18px -4px rgba(0, 0, 0, 0.4), 0 24px 56px -20px rgba(0, 0, 0, 0.55);
+  --shadow-xl: 0 12px 26px -6px rgba(0, 0, 0, 0.45), 0 36px 80px -24px rgba(0, 0, 0, 0.6);
+}
+
+/* ---------- 2. Aurora 动态背景（全站，含登录后的主界面） ---------- */
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: -20%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(44% 58% at 16% 24%, rgba(59, 73, 223, 0.42), transparent 72%),
+    radial-gradient(48% 60% at 84% 16%, rgba(14, 116, 208, 0.34), transparent 72%),
+    radial-gradient(54% 64% at 66% 84%, rgba(147, 51, 234, 0.32), transparent 72%),
+    radial-gradient(40% 50% at 6% 80%, rgba(8, 145, 178, 0.26), transparent 70%),
+    linear-gradient(155deg, #0a0e27 0%, #121536 48%, #0c1028 100%);
+  animation: adminAuroraDrift 40s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes adminAuroraDrift {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translate3d(-2%, 3%, 0) rotate(1.2deg) scale(1.05);
+  }
+  100% {
+    transform: translate3d(2.5%, -2%, 0) rotate(-1.2deg) scale(1.04);
+  }
+}
+
+/* 全站字体平滑 */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: 0.01em;
+}
+
+/* ---------- 3. Apple 玻璃配方 ---------- */
+
+/* 统一玻璃表面：更高饱和度的磨砂 + 顶部内高光 */
+.glass,
+.stat-card,
+.config-card,
+.modal-content,
+#admin-login-card {
+  backdrop-filter: blur(32px) saturate(190%);
+  -webkit-backdrop-filter: blur(32px) saturate(190%);
+  background-color: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.03),
+    0 24px 60px -18px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* 侧边栏：独立悬浮玻璃板 */
+.sidebar {
+  background: rgba(20, 25, 48, 0.52) !important;
+  backdrop-filter: blur(36px) saturate(200%);
+  -webkit-backdrop-filter: blur(36px) saturate(200%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 24px 64px -20px rgba(0, 0, 0, 0.6);
+}
+
+/* 顶栏：通透磨砂 */
+.top-bar {
+  background: rgba(18, 23, 45, 0.55) !important;
+  backdrop-filter: blur(30px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(190%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* ---------- 4. 导航 ---------- */
+
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.nav-item.active {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.85), rgba(139, 92, 246, 0.85));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    0 10px 28px -8px rgba(99, 102, 241, 0.55);
+}
+
+/* ---------- 5. 统计卡片 ---------- */
+
+.stat-card {
+  background: rgba(28, 34, 62, 0.42) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 20px;
+}
+
+.stat-card::before {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  background: rgba(34, 41, 74, 0.55) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 20px 44px -16px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* ---------- 6. 配置面板 / 卡片 ---------- */
+
+.config-card {
+  background: rgba(24, 29, 55, 0.5) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 18px;
+}
+
+.config-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 16px 44px -16px rgba(0, 0, 0, 0.55) !important;
+}
+
+.config-card-header {
+  background: rgba(255, 255, 255, 0.045) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.config-card-body {
+  background: transparent;
+}
+
+/* 备份卡片 */
+.backup-zip-card {
+  background: rgba(24, 29, 55, 0.5) !important;
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 12px 32px -14px rgba(0, 0, 0, 0.5);
+}
+
+/* ---------- 7. 模态框 ---------- */
+
+.modal {
+  background: rgba(8, 11, 28, 0.5) !important;
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+}
+
+.modal-content {
+  border-radius: 22px;
+  background: rgba(24, 29, 55, 0.55) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+}
+
+.modal-header .modal-close {
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ---------- 8. 表格 / 列表 ---------- */
+
+.users-table-header {
+  background: rgba(255, 255, 255, 0.045);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.user-row,
+.song-table-row,
+[class*="table-row"],
+[class*="list-item"] {
+  background: rgba(24, 29, 55, 0.45) !important;
+  backdrop-filter: blur(18px) saturate(170%);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 6px 18px -8px rgba(0, 0, 0, 0.4);
+}
+
+.user-row:hover {
+  background: rgba(34, 41, 74, 0.6) !important;
+  border-color: rgba(99, 102, 241, 0.35) !important;
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 14px 34px -12px rgba(0, 0, 0, 0.55) !important;
+}
+
+/* 通用表头 */
+thead th,
+[class*="table-header"] {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09) !important;
+}
+
+/* 表格内部分隔 */
+td,
+[class*="table-"] td {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* ---------- 9. 输入框 / 搜索框 ---------- */
+
+.form-input,
+.config-input,
+.search-box,
+.search-box input {
+  background: rgba(14, 18, 38, 0.55) !important;
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+.form-input:focus,
+.config-input:focus,
+.search-box input:focus {
+  background: rgba(18, 24, 48, 0.72) !important;
+  border-color: rgba(99, 102, 241, 0.55) !important;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.18), 0 8px 24px -8px rgba(99, 102, 241, 0.4) !important;
+}
+
+/* ---------- 10. 按钮 ---------- */
+
+.btn-primary,
+.btn-batch,
+.admin-btn-submit {
+  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #8b5cf6 100%);
+  background-size: 200% 200%;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    0 10px 26px -8px rgba(99, 102, 241, 0.55);
+}
+
+.btn-primary:hover,
+.btn-batch:hover,
+.admin-btn-submit:hover:not(:disabled) {
+  background-position: 100% 0%;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 14px 34px -10px rgba(99, 102, 241, 0.7);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.07) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+}
+
+.btn-danger,
+.btn-delete,
+.btn-logout {
+  background: rgba(239, 68, 68, 0.14) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(239, 68, 68, 0.28) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.btn-danger:hover,
+.btn-delete:hover,
+.btn-logout:hover {
+  background: rgba(239, 68, 68, 0.24) !important;
+}
+
+.btn-icon {
+  background: rgba(255, 255, 255, 0.06) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+.btn-icon:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* ---------- 11. 日志 / 其余点缀 ---------- */
+
+.log-line:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.status-indicator {
+  background: rgba(16, 185, 129, 0.12) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.sidebar-divider,
+.modal-header,
+.modal-footer {
+  border-color: rgba(255, 255, 255, 0.09);
+}
+
+/* 滚动条：半透明玻璃 */
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+/* 文本选区 */
+::selection {
+  background: rgba(99, 102, 241, 0.35);
+  color: #fff;
+}
+
+/* 减少动态效果的用户关闭背景动画 */
+@media (prefers-reduced-motion: reduce) {
+  body::before {
+    animation: none;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

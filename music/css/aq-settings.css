@@ -1,0 +1,374 @@
+/* =============================================================================
+   aq-settings.css —— 设置页 iOS 风格皮肤（参考 am-4u2.pages.dev 设置页）
+   -----------------------------------------------------------------------------
+   只作用于 #view-settings，不碰 DOM / 不改任何 JS 逻辑。
+   设计语言：iOS 分组的 inset 列表 —— 灰底 + 白色圆角卡片 + 等宽行 + 分隔线 +
+   绿色 iOS 开关 + 分段控件 + 主题色按钮。深浅色齐全。
+   ========================================================================== */
+
+/* ------------------------------ 0. 作用域令牌 ------------------------------ */
+#view-settings {
+    --set-bg: #f2f2f7;
+    --set-card: #ffffff;
+    --set-sep: rgba(60, 60, 67, 0.14);
+    --set-label: #1c1c1e;
+    --set-label-2: rgba(60, 60, 67, 0.62);
+    --set-label-3: rgba(60, 60, 67, 0.42);
+    --set-fill: rgba(118, 118, 128, 0.12);
+    --set-fill-2: rgba(118, 118, 128, 0.08);
+    --set-green: #34c759;
+    --set-accent: var(--c-500, #10b981);
+    --set-accent-strong: var(--c-600, #059669);
+    --set-red: #ff3b30;
+    --set-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 6px rgba(0, 0, 0, 0.03);
+    --set-radius: 14px;
+}
+html.dark #view-settings {
+    --set-bg: #000000;
+    --set-card: #1c1c1e;
+    --set-sep: rgba(84, 84, 88, 0.55);
+    --set-label: #f5f5f7;
+    --set-label-2: rgba(235, 235, 245, 0.62);
+    --set-label-3: rgba(235, 235, 245, 0.42);
+    --set-fill: rgba(118, 118, 128, 0.24);
+    --set-fill-2: rgba(118, 118, 128, 0.16);
+    --set-green: #30d158;
+    --set-shadow: none;
+}
+
+/* ------------------------------ 1. 容器与外框 ------------------------------ */
+#view-settings {
+    background: var(--set-bg);
+}
+/* 原来包住一切的大白卡 → 透明，让内容直接铺在 iOS 灰底上 */
+#view-settings > div.t-bg-panel {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 8px 16px 40px !important;
+    max-width: 640px;
+}
+
+/* 标题 */
+#view-settings > div.t-bg-panel > h2 {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--set-label);
+    margin: 6px 2px 14px;
+    letter-spacing: -0.02em;
+}
+
+/* ------------------------------ 2. 顶部分段标签 ------------------------------ */
+#view-settings div:has(> #settings-tab-system) {
+    display: flex;
+    gap: 0;
+    background: var(--set-fill-2);
+    border: none !important;
+    border-radius: 10px;
+    padding: 2px;
+    margin-bottom: 18px;
+    overflow: visible;
+}
+#view-settings [id^="settings-tab-"] {
+    flex: 1 1 0;
+    border: none !important;
+    border-radius: 8px;
+    padding: 7px 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--set-label-2);
+    background: transparent;
+    min-width: 0;
+    white-space: nowrap;
+    text-align: center;
+    transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+#view-settings [id^="settings-tab-"]:hover { color: var(--set-label); }
+#view-settings [id^="settings-tab-"].text-emerald-600,
+#view-settings [id^="settings-tab-"].border-emerald-600 {
+    background: var(--set-card);
+    color: var(--set-label);
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.16), 0 0 0 0.5px rgba(0, 0, 0, 0.05);
+}
+html.dark #view-settings [id^="settings-tab-"].text-emerald-600,
+html.dark #view-settings [id^="settings-tab-"].border-emerald-600 {
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5), 0 0 0 0.5px rgba(255, 255, 255, 0.08);
+}
+
+/* ------------------------------ 3. 分组标题 ------------------------------ */
+#view-settings h3,
+#view-settings h4 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--set-label-3) !important;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    margin: 6px 4px 8px;
+}
+#view-settings h3 > i,
+#view-settings h4 > i {
+    color: var(--set-label-3) !important;
+}
+
+/* ------------------------------ 4. 卡片（set-block） ------------------------------ */
+#view-settings .t-bg-panel {
+    background-color: var(--set-card) !important;
+    border: none !important;
+    border-radius: var(--set-radius);
+    box-shadow: var(--set-shadow);
+    padding: 14px 16px;
+}
+html.dark #view-settings .t-bg-panel {
+    box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.06);
+}
+/* 卡片标题（如「自定义源」）→ 普通标签（仅嵌套卡片，外层大白卡不算） */
+#view-settings > div .t-bg-panel h3,
+#view-settings > div .t-bg-panel h4 {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--set-label) !important;
+    letter-spacing: 0;
+    margin: 0;
+}
+#view-settings > div .t-bg-panel h3 > i,
+#view-settings > div .t-bg-panel h4 > i {
+    color: var(--set-accent) !important;
+}
+/* 由 aq-settings.js 包出来的整组卡片（网络设置等裸开关行） */
+#view-settings .aq-set-group {
+    background-color: var(--set-card) !important;
+    border-radius: var(--set-radius);
+    box-shadow: var(--set-shadow);
+    overflow: hidden;
+    margin-bottom: 16px;
+}
+html.dark #view-settings .aq-set-group {
+    box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.06);
+}
+#view-settings .aq-set-group > .aq-set-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 0.5px solid var(--set-sep);
+}
+#view-settings .aq-set-group > .aq-set-row:last-child {
+    border-bottom: none;
+}
+
+/* ------------------------------ 5. iOS 开关 ------------------------------ */
+#view-settings label > input.peer + div {
+    width: 51px !important;
+    height: 31px !important;
+    border-radius: 999px !important;
+    background: rgba(120, 120, 128, 0.28) !important;
+    border: none !important;
+    position: relative !important;
+    transition: background 0.2s ease;
+}
+html.dark #view-settings label > input.peer + div {
+    background: rgba(120, 120, 128, 0.4) !important;
+}
+#view-settings label > input.peer + div::after {
+    content: "";
+    position: absolute;
+    top: 2px !important;
+    left: 2px !important;
+    width: 27px !important;
+    height: 27px !important;
+    border-radius: 50%;
+    background: #fff;
+    border: none !important;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15), 0 0 0 0.5px rgba(0, 0, 0, 0.04);
+    transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+#view-settings label > input.peer:checked + div {
+    background: var(--set-green) !important;
+}
+#view-settings label > input.peer:checked + div::after {
+    transform: translateX(20px) !important;
+}
+#view-settings label > input.peer:focus-visible + div {
+    box-shadow: 0 0 0 4px rgba(52, 199, 89, 0.28);
+}
+
+/* ------------------------------ 6. 按钮统一 iOS 化 ------------------------------ */
+#view-settings button {
+    font-family: inherit;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.12s ease, opacity 0.12s ease, background 0.2s ease,
+        color 0.2s ease, box-shadow 0.2s ease;
+}
+#view-settings button:active { transform: scale(0.97); opacity: 0.9; }
+
+/* 实心主按钮 / 危险 / 蓝色：统一圆角与字重（~= 精确词匹配，避免 bg-emerald-500 被 bg-emerald-50 误中） */
+#view-settings button[class~="bg-emerald-500"],
+#view-settings button[class~="bg-emerald-600"],
+#view-settings button[class~="bg-red-500"],
+#view-settings button[class~="bg-red-600"],
+#view-settings button[class~="bg-blue-500"],
+#view-settings button[class~="bg-blue-600"] {
+    border-radius: 11px !important;
+    font-weight: 600 !important;
+    border: none !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06) !important;
+}
+#view-settings button[class~="bg-emerald-500"],
+#view-settings button[class~="bg-emerald-600"] {
+    background: var(--set-accent) !important;
+    color: #fff !important;
+}
+#view-settings button[class~="bg-emerald-500"]:hover,
+#view-settings button[class~="bg-emerald-600"]:hover {
+    background: var(--set-accent-strong) !important;
+}
+#view-settings button[class~="bg-red-500"],
+#view-settings button[class~="bg-red-600"] {
+    background: var(--set-red) !important;
+    color: #fff !important;
+}
+
+/* 幽灵 / 浅色按钮 → 中性灰填充 */
+#view-settings button[class~="bg-gray-100"],
+#view-settings button[class~="bg-gray-200"],
+#view-settings button[class~="bg-gray-300"],
+#view-settings button[class~="bg-blue-50"],
+#view-settings button[class~="bg-blue-100"] {
+    border-radius: 11px !important;
+    font-weight: 600 !important;
+    border: none !important;
+    background: var(--set-fill-2) !important;
+    color: var(--set-label) !important;
+    box-shadow: none !important;
+}
+/* 主题色幽灵 */
+#view-settings button[class~="bg-emerald-50"],
+#view-settings button[class~="bg-emerald-100"] {
+    border-radius: 11px !important;
+    font-weight: 600 !important;
+    border: none !important;
+    color: var(--set-accent) !important;
+    background: color-mix(in srgb, var(--set-accent) 10%, transparent) !important;
+    box-shadow: none !important;
+}
+/* 危险幽灵 */
+#view-settings button[class~="bg-red-50"],
+#view-settings button[class~="bg-red-100"] {
+    border-radius: 11px !important;
+    font-weight: 600 !important;
+    border: none !important;
+    color: var(--set-red) !important;
+    background: color-mix(in srgb, var(--set-red) 10%, transparent) !important;
+    box-shadow: none !important;
+}
+
+/* ------------------------------ 7. 下拉选择 .lm-select ------------------------------ */
+#view-settings select.lm-select {
+    width: 100%;
+    padding: 10px 32px 10px 12px !important;
+    border-radius: 10px;
+    border: none !important;
+    background-color: var(--set-fill-2) !important;
+    color: var(--set-label) !important;
+    font-size: 15px;
+    font-weight: 500;
+    min-height: 40px;
+    line-height: 1.4;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238e8e93'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    outline: none;
+}
+#view-settings select.lm-select:focus {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--set-accent) 28%, transparent);
+}
+#view-settings select.lm-select option {
+    color: #1c1c1e;
+    background: #ffffff;
+}
+
+/* ------------------------------ 8. 文本 / 数字输入 ------------------------------ */
+#view-settings input[type="text"],
+#view-settings input[type="url"],
+#view-settings input[type="password"],
+#view-settings textarea {
+    background: var(--set-fill-2) !important;
+    border: none !important;
+    border-radius: 10px;
+    color: var(--set-label) !important;
+    font-size: 15px;
+    padding: 10px 12px !important;
+    outline: none;
+}
+#view-settings input[type="number"] {
+    background: var(--set-fill-2) !important;
+    border: none !important;
+    border-radius: 10px;
+    color: var(--set-label) !important;
+    font-size: 15px;
+    min-height: 36px;
+    outline: none;
+}
+#view-settings input[type="text"]:focus,
+#view-settings input[type="url"]:focus,
+#view-settings input[type="password"]:focus,
+#view-settings input[type="number"]:focus,
+#view-settings textarea:focus {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--set-accent) 28%, transparent);
+}
+#view-settings input[type="range"] {
+    accent-color: var(--set-accent);
+}
+#view-settings input::placeholder {
+    color: var(--set-label-3);
+}
+
+/* ------------------------------ 9. 外观三选（明亮/暗黑/跟随系统） ------------------------------ */
+#view-settings .appearance-option {
+    border-radius: 14px !important;
+    border: none !important;
+    background: var(--set-card);
+    box-shadow: var(--set-shadow);
+    padding: 16px 8px !important;
+    color: var(--set-label-2);
+    transition: transform 0.12s ease, box-shadow 0.2s ease, color 0.2s ease;
+}
+#view-settings .appearance-option i {
+    font-size: 22px;
+    color: var(--set-accent);
+}
+#view-settings .appearance-option span {
+    color: var(--set-label);
+}
+#view-settings .appearance-option.ring-emerald-500 {
+    box-shadow: 0 0 0 2px var(--set-accent), 0 1px 6px rgba(0, 0, 0, 0.06);
+    color: var(--set-label);
+}
+#view-settings .appearance-option:active { transform: scale(0.97); }
+
+/* ------------------------------ 10. 小徽章 / 药丸 ------------------------------ */
+#view-settings .text-[10px],
+#view-settings .text-[11px] {
+    line-height: 1.4;
+}
+#view-settings span.rounded-full {
+    border-radius: 999px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+/* ------------------------------ 11. 日志面板 ------------------------------ */
+#view-settings #settings-panel-logs {
+    background: transparent;
+}
+
+/* 间距微调：让段落头与卡片之间的节奏更 iOS */
+#view-settings [id^="settings-panel-"] {
+    padding-bottom: 8px;
+}
